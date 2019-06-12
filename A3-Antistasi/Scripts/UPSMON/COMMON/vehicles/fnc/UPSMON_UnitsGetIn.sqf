@@ -3,7 +3,7 @@ File: UPSMON_UnitsGetIn.sqf
 Author: Azroul13
 
 Description:
-	Funcion que mete la tropa en el vehiculo
+	Function that puts units in a vehicle
 Parameter(s):
 	<--- id of the group
 	<--- array of units that will embark in the vehicle
@@ -35,15 +35,14 @@ _Gunnerturrets = _vehicle call UPSMON_fnc_commonTurrets;
 _Commandercount = (_vehicle) emptyPositions "Commander"; 
 _Drivercount = (_vehicle) emptyPositions "Driver"; 					
 
-//Obtenemos el identificador del vehiculo
+//Get the vehicle identifier
 _vehgrpid = _vehicle getvariable ["UPSMON_grpid",0];
 _cargo = _vehicle getvariable ["UPSMON_cargo",[]];			
 
-_cargo = _cargo - _unitsin; //Para evitar duplicados
-_cargo = _cargo + _unitsin; //A�adimos a la carga
+_cargo = _cargo - _unitsin; //To avoid duplicates
+_cargo = _cargo + _unitsin; //Add to the cargo load
 _vehicle setVariable ["UPSMON_cargo", _cargo, false];			
 
-//Hablitamos a la IA para entrar en el vehiculo
 //Tell AI to get in vehicle
 {		
 	Dostop _x;
@@ -76,12 +75,12 @@ _vehicle setVariable ["UPSMON_cargo", _cargo, false];
 } foreach _units;			
 //if (UPSMON_Debug>0 ) then {player sidechat format["%1: _vehgrpid %2 ,_Gunnercount %3, %4",_grpid,_vehgrpid,_Gunnercount,count _units]}; 	
 				
-//Si el vehiculo pertenece al grupo asignamos positionsX de pilot, sin� solo de carga
+//If the vehicle belongs to the group, we assign the driver and gunner
 //Make sure some AI will get in as driver (and if available as gunner(s))
 
 if ( _vehgrpid == _grpid ) then 
 {		
-	//Asignamos el conductor
+	//Assign the driver if there's a free spot
 	if (_Drivercount > 0) then 
 	{ 
 		If (count (_units) > 0) then
@@ -92,7 +91,7 @@ if ( _vehgrpid == _grpid ) then
 		};
 	};
 		
-	//Asignamos el artillero
+	//Assign the gunner if there's a free spot
 	if ( count _Gunnerturrets > 0) then 
 	{ 
 		If (count (_units) > 0) then
@@ -112,7 +111,7 @@ if ( _vehgrpid == _grpid ) then
 };
 	
 //if (UPSMON_Debug>0 ) then {player sidechat format["%1: _vehgrpid=%2 units=%4",_grpid,_vehgrpid,_cargocount,count _units]}; 	
-//Movemos el resto como carga
+//Put the rest of the units into passenger seats
 if ( _Cargocount > 0) then 
 { 	
 	If (count (_units) > 0) then

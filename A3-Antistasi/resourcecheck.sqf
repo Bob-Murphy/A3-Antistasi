@@ -206,9 +206,9 @@ while {true} do
 							{
 							if (primaryWeapon _x == "") then
 								{
-								_grupo = group _x;
+								_group = group _x;
 								deleteVehicle _x;
-								if ({alive _x} count units _grupo == 0) then {deleteGroup _grupo};
+								if ({alive _x} count units _group == 0) then {deleteGroup _group};
 								};
 							};
 						};

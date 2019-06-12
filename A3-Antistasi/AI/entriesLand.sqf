@@ -1,18 +1,18 @@
-private ["_veh","_puertas"];
+private ["_veh","_doors"];
 _veh = _this select 0;
 
 if (!alive _veh) exitWith {};
-_puertas = [];
+_doors = [];
 
 switch (typeOf _veh) do
 	{
-	case "I_MRAP_03_F": {_puertas = ["Door_LF","Door_RF"]};
-	case "I_Heli_Transport_02_F": {_puertas = ["CargoRamp_Open","Door_Back_L","Door_Back_R"]};
-	case "B_Heli_Light_01_F": {_puertas = ["DoorL_Front_Open","DoorR_Front_Open","DoorL_Back_Open","DoorR_Back_Open"]};
-	case "B_Heli_Transport_01_camo_F": {_puertas = ["Door_L","Door_R"]};
-	case "B_Heli_Transport_03_F": {_puertas = ["Door_rear_source"]};
+	case "I_MRAP_03_F": {_doors = ["Door_LF","Door_RF"]};
+	case "I_Heli_Transport_02_F": {_doors = ["CargoRamp_Open","Door_Back_L","Door_Back_R"]};
+	case "B_Heli_Light_01_F": {_doors = ["DoorL_Front_Open","DoorR_Front_Open","DoorL_Back_Open","DoorR_Back_Open"]};
+	case "B_Heli_Transport_01_camo_F": {_doors = ["Door_L","Door_R"]};
+	case "B_Heli_Transport_03_F": {_doors = ["Door_rear_source"]};
 	};
-if (count _puertas == 0) exitWith {};
+if (count _doors == 0) exitWith {};
 
 if (count _this > 1) then
 	{
@@ -23,21 +23,21 @@ if (count _this > 1) then
 
 {
 waitUntil {(!alive _veh) or (_veh doorPhase _x == 0) or (_veh doorPhase _x == 1)}
-} forEach _puertas;
+} forEach _doors;
 
 if (!alive _veh) exitWith {};
 
-_fase = _veh doorPhase (_puertas select 0);
+_fase = _veh doorPhase (_doors select 0);
 
 if (_fase == 0) then {_fase = 1} else {_fase = 0};
 
 {
 _veh animateDoor [_x,_fase,false];
-} forEach _puertas;
+} forEach _doors;
 
 {
 waitUntil {(!alive _veh) or (_veh doorPhase _x == 0) or (_veh doorPhase _x == 1)}
-} forEach _puertas;
+} forEach _doors;
 
 if (count _this > 1) then
 	{
@@ -46,16 +46,16 @@ if (count _this > 1) then
 		{
 		{
 		waitUntil {(!alive _veh) or (_veh doorPhase _x == 0) or (_veh doorPhase _x == 1)}
-		} forEach _puertas;
+		} forEach _doors;
 
 		if (!alive _veh) exitWith {};
 
-		_fase = _veh doorPhase (_puertas select 0);
+		_fase = _veh doorPhase (_doors select 0);
 
 		if (_fase == 0) then {_fase = 1} else {_fase = 0};
 
 		{
 		_veh animateDoor [_x,_fase,false];
-		} forEach _puertas;
+		} forEach _doors;
 		};
 	};

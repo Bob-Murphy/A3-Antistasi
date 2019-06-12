@@ -5,7 +5,7 @@ _object = _this select 1;
 
 switch (_cas) do {
 		case 0: {
-		// composition pour fabrique IED
+		// composition for IED factory
 		
 			_objects = [[_object,"TOP"],"DemoCharge_Remote_Ammo",1,[(random 0.2)+0.2,(random 0.2)-0.1,0],(random 20)-10] call BIS_fnc_spawnObjects;
 			_objects = [[_object,"TOP"],"DemoCharge_Remote_Ammo",1,[(random 0.2)-0.4,(random 0.2)-0.2,0],random 60] call BIS_fnc_spawnObjects;
@@ -18,7 +18,7 @@ switch (_cas) do {
 		};
 		
 		case 1: {
-		// Composition pour QG insurgé
+		// Composition for insurgent HQ
 			_file = ["Land_File1_F","Land_FilePhotos_F","Land_File2_F"] call BIS_fnc_selectRandom;
 			_pen = ["Land_PenRed_F","Land_PenBlack_F"] call BIS_fnc_selectRandom;
 			
@@ -31,7 +31,7 @@ switch (_cas) do {
 		};
 		
 		case 2: {
-		// Composition table argent
+		// Silver table composition
 		
 			_ordi = ["Land_Laptop_unfolded_F","Land_Laptop_F"] call BIS_fnc_selectRandom;
 			_file = ["Land_File1_F","Land_FilePhotos_F","Land_File2_F"] call BIS_fnc_selectRandom;
@@ -47,7 +47,7 @@ switch (_cas) do {
 		};
 		
 		case 3: {
-		// Composition table d'operation
+		// Operating table composition
 			_object1 = ["Land_Bandage_F","Land_BloodBag_F","Land_Antibiotic_F","Land_Bandage_F","Land_Bandage_F","Land_PainKillers_F"] call BIS_fnc_selectRandom;
 			_object2 = ["Land_Bandage_F","Land_BloodBag_F","Land_Antibiotic_F","Land_Bandage_F","Land_Bandage_F","Land_PainKillers_F"] call BIS_fnc_selectRandom;
 			_object3 = ["Land_Bandage_F","Land_BloodBag_F","Land_Antibiotic_F","Land_Bandage_F","Land_Bandage_F","Land_PainKillers_F"] call BIS_fnc_selectRandom;
@@ -64,14 +64,14 @@ switch (_cas) do {
 		};	
 
 		case 4: {
-		// Composition atelier réparation
+		// Composition repair workshop
 			_objects = [[_object,"TOP"],"Land_CanisterOil_F",1,[-0.5,-0.1,0],random 180] call BIS_fnc_spawnObjects;
 			_objects = [[_object,"TOP"],"Land_MultiMeter_F",1,[0.2,0.2,0],(random 20)-20] call BIS_fnc_spawnObjects;
 			_objects = [[_object,"TOP"],"Land_Pliers_F",1,[0.1,0.1,0],0] call BIS_fnc_spawnObjects;
 		};
 		
 		case 5: {
-		// compostion pour etagère ied
+		// compostion for shelf IED
 			_obj1 = "Land_FMradio_F" createVehicle [0,0,0];
 			_obj1 setdir ((getdir _object) + random 30);
 			_obj1 attachTo [_object,[0,0,0.54]];
@@ -85,7 +85,7 @@ switch (_cas) do {
 		};
 		
 		case 6: {
-		// Composition dépot munition
+		// Ammunition depot composition
 		
 			_weapon = ["arifle_TRG21_F","arifle_TRG20_F","arifle_TRG21_GL_F","arifle_TRG20_ACO_Flash_F","launch_B_Titan_short_F"] call BIS_fnc_selectRandom;
 			_weaponspawn = createvehicle ["groundWeaponHolder", getposATL _object, [], 0, "can_collide"]; 
@@ -102,7 +102,7 @@ switch (_cas) do {
 		};
 		
 		case 5: {
-		// compostion pour tentes
+		// composition for tents
 			_obj1 = "Land_Ammobox_rounds_F" createVehicle [0,0,0];
 			_obj1 setdir ((getdir _object) + random 30);
 			_obj1 attachTo [_object,[0,0,0.54]];

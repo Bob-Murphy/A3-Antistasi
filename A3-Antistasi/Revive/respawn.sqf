@@ -18,7 +18,7 @@ if (isMultiplayer) exitWith
 	//if (captive _unit) then {[_unit,false] remoteExec ["setCaptive"]};
 	_unit setDamage 1;
 	};
-private ["_positionX","_tam","_roads","_road","_pos"];
+private ["_positionX","_radius","_roads","_road","_pos"];
 _positionX = getMarkerPos respawnTeamPlayer;
 if (lifeState _unit == "INCAPACITATED") then {_unit setUnconscious false};
 _unit setVariable ["helped",objNull];
@@ -41,12 +41,12 @@ _resourcesFIA = round ((server getVariable "resourcesFIA") * 0.05);
 if ((_x != vehicle _x) and (driver vehicle _x == _x)) then
 	{
 	sleep 3;
-	_tam = 10;
+	_radius = 10;
 	while {true} do
 		{
-		_roads = _positionX nearRoads _tam;
+		_roads = _positionX nearRoads _radius;
 		if (count _roads > 0) exitWith {};
-		_tam = _tam + 10;
+		_radius = _radius + 10;
 		};
 	_road = _roads select 0;
 	_pos = position _road findEmptyPosition [1,50,typeOf (vehicle _unit)];

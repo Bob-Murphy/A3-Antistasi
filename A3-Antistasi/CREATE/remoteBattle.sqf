@@ -9,7 +9,7 @@ if (_sideX == Occupants) then {_eny pushBack Invaders} else {_eny pushBack Occup
 
 while {true} do
 	{
-	sleep 10;//poner 10
+	sleep 10;//wait 10 seconds
 	_soldiers = _soldiers select {[_x] call A3A_fnc_canFight};
 	if (_soldiers isEqualTo []) exitWith {};
 	_exit = false;

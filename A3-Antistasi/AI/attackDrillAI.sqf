@@ -1,13 +1,13 @@
-private _grupo = _this;
-_objectivesX = _grupo call A3A_fnc_enemyList;
-_grupo setVariable ["objectivesX",_objectivesX];
-_grupo setVariable ["taskX","Patrol"];
-private _sideX = side _grupo;
+private _group = _this;
+_objectivesX = _group call A3A_fnc_enemyList;
+_group setVariable ["objectivesX",_objectivesX];
+_group setVariable ["taskX","Patrol"];
+private _sideX = side _group;
 private _friendlies = if ((_sideX == Occupants) or (_sideX == teamPlayer)) then {[_sideX,civilian]} else {[_sideX]};
 _mortarsX = [];
 _mgs = [];
-_movable = [leader _grupo];
-_baseOfFire = [leader _grupo];
+_movable = [leader _group];
+_baseOfFire = [leader _group];
 _flankers = [];
 
 {
@@ -37,15 +37,14 @@ if (alive _x) then
 			};
 		};
 	};
-} forEach (units _grupo);
+} forEach (units _group);
 
 if (count _mortarsX == 1) then
 	{
-	_mortarsX append ((units _grupo) select {_x getVariable ["typeOfSoldier",""] == "StaticBase"});
+	_mortarsX append ((units _group) select {_x getVariable ["typeOfSoldier",""] == "StaticBase"});
 	if (count _mortarsX > 1) then
 		{
-		//_mortarsX spawn A3A_fnc_mortarDrill;
-		_mortarsX spawn A3A_fnc_staticMGDrill;//no olvides borrar la otra función si esto funciona
+		_mortarsX spawn A3A_fnc_staticMGDrill;
 		}
 	else
 		{
@@ -55,7 +54,7 @@ if (count _mortarsX == 1) then
 	};
 if (count _mgs == 1) then
 	{
-	_mgs append ((units _grupo) select {_x getVariable ["typeOfSoldier",""] == "StaticBase"});
+	_mgs append ((units _group) select {_x getVariable ["typeOfSoldier",""] == "StaticBase"});
 	if (count _mgs == 2) then
 		{
 		_mgs spawn A3A_fnc_staticMGDrill;
@@ -67,10 +66,10 @@ if (count _mgs == 1) then
 		};
 	};
 
-_grupo setVariable ["movable",_movable];
-_grupo setVariable ["baseOfFire",_baseOfFire];
-_grupo setVariable ["flankers",_flankers];
-if (side _grupo == teamPlayer) then {_grupo setVariable ["autoRearmed",time + 300]};
+_group setVariable ["movable",_movable];
+_group setVariable ["baseOfFire",_baseOfFire];
+_group setVariable ["flankers",_flankers];
+if (side _group == teamPlayer) then {_group setVariable ["autoRearmed",time + 300]};
 {
 if (vehicle _x != _x) then
 	{
@@ -78,21 +77,21 @@ if (vehicle _x != _x) then
 		{
 		if ((assignedVehicleRole _x) select 0 == "Cargo") then
 			{
-			if (isNull(_grupo getVariable ["transporte",objNull])) then {_grupo setVariable ["transporte",vehicle _x]};
+			if (isNull(_group getVariable ["transporte",objNull])) then {_group setVariable ["transporte",vehicle _x]};
 			};
 		};
 	};
-} forEach units _grupo;
+} forEach units _group;
 
 while {true} do
 	{
-	if !(isPlayer (leader _grupo)) then
+	if !(isPlayer (leader _group)) then
 		{
 		_movable = _movable select {[_x] call A3A_fnc_canFight};
 		_baseOfFire = _baseOfFire select {[_x] call A3A_fnc_canFight};
 		_flankers = _flankers select {[_x] call A3A_fnc_canFight};
-		_objectivesX = _grupo call A3A_fnc_enemyList;
-		_grupo setVariable ["objectivesX",_objectivesX];
+		_objectivesX = _group call A3A_fnc_enemyList;
+		_group setVariable ["objectivesX",_objectivesX];
 		if !(_objectivesX isEqualTo []) then
 			{
 			_air = objNull;
@@ -115,7 +114,7 @@ while {true} do
 				};
 			if (!(isNull _air) and !(isNull _tanksX)) exitWith {};
 			} forEach _objectivesX;
-			_LeaderX = leader _grupo;
+			_LeaderX = leader _group;
 			_allNearFriends = allUnits select {(_x distance _LeaderX < (distanceSPWN/2)) and (side group _x in _friendlies)};
 			{
 			_unit = _x;
@@ -132,9 +131,9 @@ while {true} do
 			//_air = objNull;
 			//_tanksX = objNull;
 			_numObjectives = count _objectivesX;
-			_taskX = _grupo getVariable ["taskX","Patrol"];
-			_nearX = _grupo call A3A_fnc_nearEnemy;
-			_soldiers = ((units _grupo) select {[_x] call A3A_fnc_canFight}) - [_grupo getVariable ["mortarX",objNull]];
+			_taskX = _group getVariable ["taskX","Patrol"];
+			_nearX = _group call A3A_fnc_nearEnemy;
+			_soldiers = ((units _group) select {[_x] call A3A_fnc_canFight}) - [_group getVariable ["mortarX",objNull]];
 			_numSoldiers = count _soldiers;
 			if !(isNull _air) then
 				{
@@ -142,15 +141,15 @@ while {true} do
 					{
 					if (_sideX != teamPlayer) then {[[getPosASL _LeaderX,_sideX,"Air",false],"A3A_fnc_patrolCA"] remoteExec ["A3A_fnc_scheduler",2]};
 					};
-				//_nuevataskX = ["Hide",_soldiers - (_soldiers select {(_x call A3A_fnc_typeOfSoldier == "AAMan") or (_x getVariable ["typeOfSoldier",""] == "StaticGunner")})];
-				_grupo setVariable ["taskX","Hide"];
+				//_newtaskX = ["Hide",_soldiers - (_soldiers select {(_x call A3A_fnc_typeOfSoldier == "AAMan") or (_x getVariable ["typeOfSoldier",""] == "StaticGunner")})];
+				_group setVariable ["taskX","Hide"];
 				_taskX = "Hide";
 				};
 			if !(isNull _tanksX) then
 				{
 				if (_allNearFriends findIf {_x call A3A_fnc_typeOfSoldier == "ATMan"} == -1) then
 					{
-					_mortarX = _grupo getVariable ["mortarsX",objNull];
+					_mortarX = _group getVariable ["mortarsX",objNull];
 					if (!(isNull _mortarX) and ([_mortarX] call A3A_fnc_canFight)) then
 						{
 						if ({if (_x distance _tanksX < 100) exitWith {1}} count _allNearFriends == 0) then {[_mortarX,getPosASL _tanksX,4] spawn A3A_fnc_mortarSupport};
@@ -160,8 +159,8 @@ while {true} do
 						if (_sideX != teamPlayer) then {[[getPosASL _LeaderX,_sideX,"Tank",false],"A3A_fnc_patrolCA"] remoteExec ["A3A_fnc_scheduler",2]};
 						};
 					};
-				//_nuevataskX = ["Hide",_soldiers - (_soldiers select {(_x getVariable ["typeOfSoldier",""] == "ATMan")})];
-				_grupo setVariable ["taskX","Hide"];
+				//_newtaskX = ["Hide",_soldiers - (_soldiers select {(_x getVariable ["typeOfSoldier",""] == "ATMan")})];
+				_group setVariable ["taskX","Hide"];
 				_taskX = "Hide";
 				};
 			if (_numObjectives > 2*_numNearFriends) then
@@ -169,17 +168,17 @@ while {true} do
 				if !(isNull _nearX) then
 					{
 					if (_sideX != teamPlayer) then {[[getPosASL _LeaderX,_sideX,"Normal",false],"A3A_fnc_patrolCA"] remoteExec ["A3A_fnc_scheduler",2]};
-					_mortarX = _grupo getVariable ["mortarsX",objNull];
+					_mortarX = _group getVariable ["mortarsX",objNull];
 					if (!(isNull _mortarX) and ([_mortarX] call A3A_fnc_canFight)) then
 						{
 						if ({if (_x distance _nearX < 100) exitWith {1}} count _allNearFriends == 0) then {[_mortarX,getPosASL _nearX,1] spawn A3A_fnc_mortarSupport};
 						};
 					};
-				_grupo setVariable ["taskX","Hide"];
+				_group setVariable ["taskX","Hide"];
 				_taskX = "Hide";
 				};
-			_transporte = _grupo getVariable ["transporte",objNull];
-			if (isNull(_grupo getVariable ["transporte",objNull])) then
+			_transport = _group getVariable ["transporte",objNull];
+			if (isNull(_group getVariable ["transporte",objNull])) then
 				{
 				_exit = false;
 				{
@@ -190,40 +189,40 @@ while {true} do
 						{
 						if ((assignedVehicleRole _x) select 0 == "Cargo") then
 							{
-							_grupo setVariable ["transporte",_veh];
-							_transporte = _veh;
+							_group setVariable ["transporte",_veh];
+							_transport = _veh;
 							_exit = true;
 							};
 						};
 					};
 				if (_exit) exitWith {};
-				} forEach units _grupo;
+				} forEach units _group;
 				};
-			if !(isNull(_transporte)) then
+			if !(isNull(_transport)) then
 				{
-				if !(_transporte isKindOf "Tank") then
+				if !(_transport isKindOf "Tank") then
 					{
-					_driver = driver (_transporte);
+					_driver = driver (_transport);
 					if !(isNull _driver) then
 						{
 						[_driver]  allowGetIn false;
 						};
 					};
-				(units _grupo select {(assignedVehicleRole _x) select 0 == "Cargo"}) allowGetIn false;
+				(units _group select {(assignedVehicleRole _x) select 0 == "Cargo"}) allowGetIn false;
 				};
 
 			if (_taskX == "Patrol") then
 				{
 				if ((_nearX distance _LeaderX < 150) and !(isNull _nearX)) then
 					{
-					_grupo setVariable ["taskX","Assault"];
+					_group setVariable ["taskX","Assault"];
 					_taskX = "Assault";
 					}
 				else
 					{
 					if (_numObjectives > 1) then
 						{
-						_mortarX = _grupo getVariable ["mortarsX",objNull];
+						_mortarX = _group getVariable ["mortarsX",objNull];
 						if (!(isNull _mortarX) and ([_mortarX] call A3A_fnc_canFight)) then
 							{
 							if ({if (_x distance _nearX < 100) exitWith {1}} count _allNearFriends == 0) then {[_mortarX,getPosASL _nearX,1] spawn A3A_fnc_mortarSupport};
@@ -236,14 +235,14 @@ while {true} do
 				{
 				if (_nearX distance _LeaderX < 50) then
 					{
-					_grupo setVariable ["taskX","AssaultClose"];
+					_group setVariable ["taskX","AssaultClose"];
 					_taskX = "AssaultClose";
 					}
 				else
 					{
 					if (_nearX distance _LeaderX > 150) then
 						{
-						_grupo setVariable ["taskX","Patrol"];
+						_group setVariable ["taskX","Patrol"];
 						}
 					else
 						{
@@ -268,7 +267,7 @@ while {true} do
 										};
 									};
 								};
-							_mortarX = _grupo getVariable ["mortarsX",objNull];
+							_mortarX = _group getVariable ["mortarsX",objNull];
 							if (!(isNull _mortarX) and ([_mortarX] call A3A_fnc_canFight)) then
 								{
 								if ({if (_x distance _nearX < 100) exitWith {1}} count _allNearFriends == 0) then {[_mortarX,getPosASL _nearX,1] spawn A3A_fnc_mortarSupport};
@@ -282,13 +281,13 @@ while {true} do
 				{
 				if (_nearX distance _LeaderX > 150) then
 					{
-					_grupo setVariable ["taskX","Patrol"];
+					_group setVariable ["taskX","Patrol"];
 					}
 				else
 					{
 					if (_nearX distance _LeaderX > 50) then
 						{
-						_grupo setVariable ["taskX","Assault"];
+						_group setVariable ["taskX","Assault"];
 						}
 					else
 						{
@@ -333,7 +332,7 @@ while {true} do
 				{
 				if ((isNull _tanksX) and {isNull _air} and {_numObjectives <= 2*_numNearFriends}) then
 					{
-					_grupo setVariable ["taskX","Patrol"];
+					_group setVariable ["taskX","Patrol"];
 					}
 				else
 					{
@@ -344,32 +343,32 @@ while {true} do
 			}
 		else
 			{
-			if (_grupo getVariable ["taskX","Patrol"] != "Patrol") then
+			if (_group getVariable ["taskX","Patrol"] != "Patrol") then
 				{
-				if (_grupo getVariable ["taskX","Patrol"] == "Hide") then {_grupo call A3A_fnc_recallGroup};
-				_grupo setVariable ["taskX","Patrol"];
+				if (_group getVariable ["taskX","Patrol"] == "Hide") then {_group call A3A_fnc_recallGroup};
+				_group setVariable ["taskX","Patrol"];
 				};
-			if (side _grupo == teamPlayer) then
+			if (side _group == teamPlayer) then
 				{
-				if (time >= _grupo getVariable ["autoRearm",time]) then
+				if (time >= _group getVariable ["autoRearm",time]) then
 					{
-					_grupo setVariable ["autoRearm",time + 120];
+					_group setVariable ["autoRearm",time + 120];
 					{[_x] spawn A3A_fnc_autoRearm; sleep 1} forEach (_movable select {!(_x getVariable ["maneuvering",false])});
 					};
 				};
-			if !(isNull(_grupo getVariable ["transporte",objNull])) then
+			if !(isNull(_group getVariable ["transporte",objNull])) then
 				{
-				(units _grupo select {vehicle _x == _x}) allowGetIn true;
+				(units _group select {vehicle _x == _x}) allowGetIn true;
 				};
 			};
-		//diag_log format ["taskX:%1.Movable:%2.Base:%3.Flankers:%4",_grupo getVariable "taskX",_grupo getVariable "movable",_grupo getVariable "baseOfFire",_grupo getVariable "flankers"];
+		//diag_log format ["taskX:%1.Movable:%2.Base:%3.Flankers:%4",_group getVariable "taskX",_group getVariable "movable",_group getVariable "baseOfFire",_group getVariable "flankers"];
 		sleep 30;
-		_movable =  (_grupo getVariable ["movable",[]]) select {alive _x};
-		if ((_movable isEqualTo []) or (isNull _grupo)) exitWith {};
-		_grupo setVariable ["movable",_movable];
-		_baseOfFire = (_grupo getVariable ["baseOfFire",[]]) select {alive _x};
-		_grupo setVariable ["baseOfFire",_baseOfFire];
-		_flankers = (_grupo getVariable ["flankers",[]]) select {alive _x};
-		_grupo setVariable ["flankers",_flankers];
+		_movable =  (_group getVariable ["movable",[]]) select {alive _x};
+		if ((_movable isEqualTo []) or (isNull _group)) exitWith {};
+		_group setVariable ["movable",_movable];
+		_baseOfFire = (_group getVariable ["baseOfFire",[]]) select {alive _x};
+		_group setVariable ["baseOfFire",_baseOfFire];
+		_flankers = (_group getVariable ["flankers",[]]) select {alive _x};
+		_group setVariable ["flankers",_flankers];
 		};
 	};

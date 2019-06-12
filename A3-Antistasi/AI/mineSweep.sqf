@@ -1,15 +1,15 @@
 if (!isServer and hasInterface) exitWith {};
 
-private ["_costs","_grupo","_unit","_minesX","_tam","_roads","_truckX","_mineX","_countX"];
+private ["_costs","_group","_unit","_minesX","_radius","_roads","_truckX","_mineX","_countX"];
 
 _costs = (server getVariable (SDKExp select 0)) + ([vehSDKRepair] call A3A_fnc_vehiclePrice);
 
 [-1,-1*_costs] remoteExec ["A3A_fnc_resourcesFIA",2];
 
-_grupo = createGroup teamPlayer;
+_group = createGroup teamPlayer;
 
-_unit = _grupo createUnit [(SDKExp select 0), getMarkerPos respawnTeamPlayer, [], 0, "NONE"];
-_grupo setGroupId ["MineSw"];
+_unit = _group createUnit [(SDKExp select 0), getMarkerPos respawnTeamPlayer, [], 0, "NONE"];
+_group setGroupId ["MineSw"];
 _minesX = [];
 sleep 1;
 _road = [getMarkerPos respawnTeamPlayer] call A3A_fnc_findNearestGoodRoad;
@@ -22,13 +22,13 @@ _truckX = vehSDKRepair createVehicle _pos;
 clearMagazineCargo unitBackpack _unit;
 _unit addItemToBackpack "MineDetector";
 
-_grupo addVehicle _truckX;
+_group addVehicle _truckX;
 [_unit] orderGetIn true;
 // Add Mine Detector to detect invisible APERS
 clearMagazineCargo (unitBackpack _unit);
 _unit addItemToBackpack "MineDetector";
 //_unit setBehaviour "SAFE";
-theBoss hcSetGroup [_grupo];
+theBoss hcSetGroup [_group];
 
 while {alive _unit} do
 	{

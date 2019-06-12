@@ -1,5 +1,5 @@
 private ["_unit"];
-//esto habrá que meterlo en onplayerrespawn también
+//this has to be put in onplayerrespawn as well
 _unit = _this select 0;
 //_unit setVariable ["inconsciente",false,true];
 

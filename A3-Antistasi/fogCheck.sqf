@@ -2,7 +2,7 @@
 private ["_thing0","_typeX","_error","_pos0","_pos1"];
 
 _thing0 = _this select 0;
-_typeX = _this select 1;//false : tierra, misma altura, true: aire, 300 metros más arriba
+_typeX = _this select 1;//false: earth, same height. true: air, 300 meters higher
 _error = false;
 _pos0 = [];
 if (_thing0 isEqualType []) then
@@ -27,7 +27,7 @@ else
 		if (_thing0 isEqualType objNull) then {_pos0 = getPosASL _thing0} else {_error = true};
 		};
 	};
-if (_error) exitWith {diag_log format ["Antistasi error en fogcheck. Buscando altura a %1",_thing0]};
+if (_error) exitWith {diag_log format ["Antistasi error in fogcheck. Check the height %1",_thing0]};
 
 _pos1 = [(_pos0 select 0) + 300,_pos0 select 1,_pos0 select 2];
 if (_typeX) then {_pos1 = [(_pos0 select 0) + 300,_pos0 select 1,(_pos0 select 2)+300]};

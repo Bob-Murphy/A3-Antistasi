@@ -173,7 +173,7 @@ if (isServer and !_byPassServer) then
 	*/
 	["posHQ"] call fn_LoadStat;
 	["nextTick"] call fn_LoadStat;
-	["staticsX"] call fn_LoadStat;//tiene que ser el último para que el sleep del borrado del contenido no haga que despawneen
+	["staticsX"] call fn_LoadStat;//it has to be the last one so that the garbage cleaning system does not cause them to disappear
 
 
 	if (!isMultiPlayer) then {player setPos getMarkerPos respawnTeamPlayer} else {{_x setPos getMarkerPos respawnTeamPlayer} forEach (playableUnits select {side _x == teamPlayer})};

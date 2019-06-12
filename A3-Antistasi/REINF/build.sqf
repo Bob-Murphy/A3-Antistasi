@@ -305,7 +305,7 @@ if ((_typeX == "SB") or (_typeX == "CB")) exitWith
 	};
 
 
-//falta inicializarlo en veh init
+//missing initialize in veh init
 if (_typeX == "RB") then
 	{
 	sleep 30;

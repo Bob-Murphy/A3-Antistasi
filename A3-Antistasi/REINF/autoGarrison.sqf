@@ -1,6 +1,6 @@
 if (!isServer and hasInterface) exitWith {};
 
-private ["_markerX","_destinationX","_originX","_groups","_soldiers","_vehiclesX","_size","_grupo","_truckX","_tam","_roads","_road","_pos"];
+private ["_markerX","_destinationX","_originX","_groups","_soldiers","_vehiclesX","_size","_group","_truckX","_radius","_roads","_road","_pos"];
 
 _markerX = _this select 0;
 if (not(_markerX in smallCAmrk)) exitWith {};
@@ -31,12 +31,12 @@ while {(_size > 0)} do
 	{
 	if (random 20 <= skillFIA) then {_formatX pushBack (_x select 1)} else {_formatX pushBack (_x select 0)};
 	} forEach _typeGroup;
-	_grupo = [_originX, teamPlayer, _formatX,false,true] call A3A_fnc_spawnGroup;
-	if !(isNull _grupo) then
+	_group = [_originX, teamPlayer, _formatX,false,true] call A3A_fnc_spawnGroup;
+	if !(isNull _group) then
 		{
-		_groups pushBack _grupo;
-		{[_x] spawn A3A_fnc_FIAinit; _soldiers pushBack _x} forEach units _grupo;
-		_Vwp1 = _grupo addWaypoint [_destinationX, 0];
+		_groups pushBack _group;
+		{[_x] spawn A3A_fnc_FIAinit; _soldiers pushBack _x} forEach units _group;
+		_Vwp1 = _group addWaypoint [_destinationX, 0];
 		_Vwp1 setWaypointType "MOVE";
 		_Vwp1 setWaypointBehaviour "AWARE";
 		sleep 30;

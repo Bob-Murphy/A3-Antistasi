@@ -1,7 +1,7 @@
-//NOTA: TAMBIÉN LO USO PARA FIA
+//NOTE: ALSO USE THIS FOR FIA
 if (!isServer and hasInterface) exitWith{};
 
-private ["_markerX","_groups","_soldiers","_positionX","_num","_dataX","_prestigeOPFOR","_prestigeBLUFOR","_esAAF","_params","_frontierX","_array","_countX","_grupo","_dog","_grp","_sideX"];
+private ["_markerX","_groups","_soldiers","_positionX","_num","_dataX","_prestigeOPFOR","_prestigeBLUFOR","_esAAF","_params","_frontierX","_array","_countX","_group","_dog","_grp","_sideX"];
 _markerX = _this select 0;
 
 _groups = [];
@@ -55,18 +55,18 @@ if (_num < 1) then {_num = 1};
 _countX = 0;
 while {(spawner getVariable _markerX != 2) and (_countX < _num)} do
 	{
-	_grupo = _params call A3A_fnc_spawnGroup;
+	_group = _params call A3A_fnc_spawnGroup;
 	sleep 1;
 	if (_esAAF) then
 		{
 		if (random 10 < 2.5) then
 			{
-			_dog = _grupo createUnit ["Fin_random_F",_positionX,[],0,"FORM"];
+			_dog = _group createUnit ["Fin_random_F",_positionX,[],0,"FORM"];
 			[_dog] spawn A3A_fnc_guardDog;
 			};
 		};
-	_nul = [leader _grupo, _markerX, "SAFE", "RANDOM", "SPAWNED","NOVEH2", "NOFOLLOW"] execVM "scripts\UPSMON.sqf";
-	_groups pushBack _grupo;
+	_nul = [leader _group, _markerX, "SAFE", "RANDOM", "SPAWNED","NOVEH2", "NOFOLLOW"] execVM "scripts\UPSMON.sqf";
+	_groups pushBack _group;
 	_countX = _countX + 1;
 	};
 
