@@ -20,16 +20,16 @@ if (_exit) exitWith {hint "You are not owner of this vehicle and you cannot sell
 
 if (not(_veh isKindOf "Air")) exitWith {hint "Only Air Vehicles can be used to increase Airstrike points"};
 
-_tipo = typeOf _veh;
+_typeX = typeOf _veh;
 
-//if (_tipo == vehSDKHeli) exitWith {hint "Syndikat Helicopters cannot be used to increase Airstrike points"};
+//if (_typeX == vehSDKHeli) exitWith {hint "Syndikat Helicopters cannot be used to increase Airstrike points"};
 
-_puntos = 2;
+_pointsX = 2;
 
-if (_tipo in vehAttackHelis) then {_puntos = 5};
-if ((_tipo == vehCSATPlane) or (_tipo == vehNATOPlane)) then {_puntos = 10};
+if (_typeX in vehAttackHelis) then {_pointsX = 5};
+if ((_typeX == vehCSATPlane) or (_typeX == vehNATOPlane)) then {_pointsX = 10};
 deleteVehicle _veh;
-hint format ["Air Support increased in %1 points",_puntos];
-bombRuns = bombRuns + _puntos;
+hint format ["Air Support increased in %1 points",_pointsX];
+bombRuns = bombRuns + _pointsX;
 publicVariable "bombRuns";
 [] remoteExec ["A3A_fnc_statistics",theBoss];

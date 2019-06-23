@@ -10,7 +10,7 @@ if (gameMode == 1) then
     _controlsNATO = controlsX;
 	if (worldName == "Tanoa") then
 	    {
-	    _mrkCSAT = ["airport_1","puerto_5","puesto_10","control_20"];
+	    _mrkCSAT = ["airport_1","seaport_5","outpost_10","control_20"];
 	    _controlsNATO = _controlsNATO - ["control_20"];
 	    _controlsCSAT = ["control_20"];
 	    }
@@ -18,7 +18,7 @@ if (gameMode == 1) then
 	    {
 	    if (worldName == "Altis") then
 	        {
-	        _mrkCSAT = ["airport_2","puerto_4","puesto_5","control_52","control_33"];
+	        _mrkCSAT = ["airport_2","seaport_4","outpost_5","control_52","control_33"];
 	        _controlsNATO = _controlsNATO - ["control_52","control_33"];
 	    	_controlsCSAT = ["control_52","control_33"];
 	        }
@@ -26,7 +26,7 @@ if (gameMode == 1) then
             {
             if (worldName == "chernarus_summer") then
                 {
-                _mrkCSAT = ["puesto_21"];
+                _mrkCSAT = ["outpost_21"];
                 };
             };
 	    };
@@ -45,8 +45,8 @@ else
 		_controlsNATO = controlsX;
 		};
 	};
-{lados setVariable [_x,malos,true]} forEach _controlsNATO;
-{lados setVariable [_x,Invaders,true]} forEach _controlsCSAT;
+{sidesX setVariable [_x,Occupants,true]} forEach _controlsNATO;
+{sidesX setVariable [_x,Invaders,true]} forEach _controlsCSAT;
 {
 _pos = getMarkerPos _x;
 _dmrk = createMarker [format ["Dum%1",_x], _pos];
@@ -65,7 +65,7 @@ if (_x in _mrkCSAT) then
         _garrison append (selectRandom groupsCSATSquad);
         };
     garrison setVariable [_x,_garrison,true];
-    lados setVariable [_x,Invaders,true];
+    sidesX setVariable [_x,Invaders,true];
     }
 else
     {
@@ -77,10 +77,10 @@ else
         _garrison append (selectRandom groupsNATOSquad);
         };
     garrison setVariable [_x,_garrison,true];
-    lados setVariable [_x,malos,true];
+    sidesX setVariable [_x,Occupants,true];
     };
 _nul = [_x] call A3A_fnc_createControls;
-server setVariable [_x,0,true];//fecha en fomrato dateToNumber en la que estarán idle
+server setVariable [_x,0,true];//dateX en fomrato dateToNumber en la que estarán idle
 } forEach airportsX;
 
 {
@@ -99,12 +99,12 @@ for "_i" from 1 to _garrNum do
 if (_x in _mrkCSAT) then
 	{
 	_dmrk setMarkerColor colorInvaders;
-	lados setVariable [_x,Invaders,true];
+	sidesX setVariable [_x,Invaders,true];
 	}
 else
 	{
 	_dmrk setMarkerColor colorOccupants;
-	lados setVariable [_x,malos,true];
+	sidesX setVariable [_x,Occupants,true];
 	};
 garrison setVariable [_x,_garrison,true];
 _nul = [_x] call A3A_fnc_createControls;
@@ -126,12 +126,12 @@ for "_i" from 1 to _garrNum do
 if (_x in _mrkCSAT) then
 	{
 	_dmrk setMarkerColor colorInvaders;
-    lados setVariable [_x,Invaders,true];
+    sidesX setVariable [_x,Invaders,true];
 	}
 else
 	{
 	_dmrk setMarkerColor colorOccupants;
-    lados setVariable [_x,malos,true];
+    sidesX setVariable [_x,Occupants,true];
     };
 garrison setVariable [_x,_garrison,true];
 _nul = [_x] call A3A_fnc_createControls;
@@ -154,7 +154,7 @@ if !(_x in _mrkCSAT) then
         {
         _garrison append (selectRandom groupsFIASquad);
         };
-    lados setVariable [_x,malos,true];
+    sidesX setVariable [_x,Occupants,true];
     }
 else
     {
@@ -174,7 +174,7 @@ else
 	        _garrison append (selectRandom groupsCSATSquad);
 	        };
 	    };
-    lados setVariable [_x,Invaders,true];
+    sidesX setVariable [_x,Invaders,true];
     };
 garrison setVariable [_x,_garrison,true];
 server setVariable [_x,0,true];
@@ -197,7 +197,7 @@ if (_x in _mrkCSAT) then
 	   {
 	   _garrison append (selectRandom groupsCSATSquad);
 	   };
-    lados setVariable [_x,Invaders,true];
+    sidesX setVariable [_x,Invaders,true];
     }
 else
     {
@@ -206,11 +206,11 @@ else
         {
         _garrison append (selectRandom groupsNATOSquad);
         };
-    lados setVariable [_x,malos,true];
+    sidesX setVariable [_x,Occupants,true];
     };
 garrison setVariable [_x,_garrison,true];
 _nul = [_x] call A3A_fnc_createControls;
 } forEach seaports;
 
-lados setVariable ["NATO_carrier",malos,true];
-lados setVariable ["CSAT_carrier",Invaders,true];
+sidesX setVariable ["NATO_carrier",Occupants,true];
+sidesX setVariable ["CSAT_carrier",Invaders,true];

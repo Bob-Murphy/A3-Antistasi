@@ -214,7 +214,7 @@ Modified:
 //		Improved AI response under Supress fire in combat situation
 //		Avoid hurt soldiers than can not stand to get in vehicles and buildings
 //		Avoid to patrol in damaged buildings
-//		avoid bugged clases such as "BIS_alice_emptydoor";
+//		avoid bugged classXs such as "BIS_alice_emptydoor";
 //		AI try to get in combat vehicles
 //		Performance optimization.
 //		Realistic reaction of squads depending on distance to target
@@ -315,7 +315,7 @@ Modified:
 //    	Added
 //		Se ha a�adido ataque frontal
 //		Formaciones de combate en funci�n de la situaci�n
-//		La IA puede entrar en los buildingsX a tomar positionsX de defensa y en ataque puede patrullarlos en busca de enemiesX o positionsX de fuego.
+//		La IA puede entrar en los buildingsX a tomar positionsX de defensa y en ataque puede patrullarlos en busca de enemiesX o positionsX de fireX.
 // 	Modificaciones:
 //		Mejorado el sistema para localizar, asignar y entrar en vehiclesX,.
 //		Optimizado el rendimiento. Se ha mejorado para que se pueda ejecutar cada 20s.
@@ -336,19 +336,19 @@ Modified:
 //Version: 4.1.2
 //		
 // 	Modificaciones:
-//		KRON_UPS_Maxwaiting pasa a ser una variable excluvia para patrullas, indica el tiempo m�ximo a esperar
+//		KRON_UPS_Maxwaiting pasa a ser una variable excluvia para patrullas, indica el timeX m�ximo a esperar
 //		para llegar al destinationX y buscar otro
 //-------------------------------------------------------------------------------------------------------------
 //Version: 4.1.0
 //    	Added
-//             Habilitado b�squeda y uso de veh�culos de transporte, cuando la IA est� lejos del objectiveX busca vehiclesX con capacidad cerca, ahora ya puedes definir tu base con vehiclesX, que si la IA los necesita los coge.
+//             Habilitado b�squeda y uso de veh�culos de transporte, cuando la IA est� lejos del objectiveX busca vehiclesX con capacidad cerca, ahora ya puedes definir tu base con vehiclesX, que si la IA los needsRearm los coge.
 //		
 // 	Modificaciones:
-//		Adaptadas ciertas partes de c�digo para ser usadas en modo multihilo, mejorando los resultados y el rendimiento en general.
+//		Adaptadas ciertas partes de c�digo para ser usadas en modeX multihilo, mejorando los resultados y el rendimiento en general.
 //-------------------------------------------------------------------------------------------------------------
 //Version: 4.0.0
 // 	Added
-// 		Control de movimiento de la IA, ahora gestionan mejor los tiempos, hacen coverturas de movimiento, avanzan con m�s precauci�n cuando est�n cerca del enemyX.
+// 		Control de movimiento de la IA, ahora gestionan mejor los timeXs, hacen coverturas de movimiento, avanzan con m�s precauci�n cuando est�n cerca del enemyX.
 // 		A�adidas algunas animaciones para darle pinceladas de dramatismo a los movimientos de la IA
 // 
 // 	Modificaciones:
@@ -404,10 +404,10 @@ Modified:
 //Version: 3.0.2
 //    	Added
 //		Se ha a�adido la opci�n de reinforcementsX, ahora se pueden definir unas unitsX de reinforcementsX alejados de la zona que se enviar�n al detectar enemiesX enemiesX 
-//		si KRON_UPS_reinforcement es true, se puede usar un markerX a modo de alarma para alimentar esta variable cuando se desee.
+//		si KRON_UPS_reinforcement es true, se puede usar un markerX a modeX de alarma para alimentar esta variable cuando se desee.
 //		Las unitsX tendr�n una predisposici�n a mantener la posici�n si tienen el rol NOMOVE
 // 	Modificaciones
-//		Se ha corregido la formula par definir los puntos de flanqueo tx = sin x * dist * (signo cos x).
+//		Se ha corregido la formula par definir los pointsX de flanqueo tx = sin x * dist * (signo cos x).
 //		Las unitsX con rol NOMOVE tienden a mantener la posici�n cuanto m�s alejados est�n del enemyX
 //		Se ha mejorado el rendimiento.
 //
@@ -418,7 +418,7 @@ Modified:
 //	Modificaciones
 //		Ahora los pelotones verifican la presencia de aliados para determinar otras rutas de flanqueo.
 //		Se ha substituido el algoritmo de determinaci�n de positionsX de flanqueo por un bug con las funciones cos y sin 
-//		que retornan aleatoriamente valores positivos o negativos con el mismo �ngulo.
+//		que retornan aleatoriamente values positivos o negativos con el mismo �ngulo.
 //
 //-------------------------------------------------------------------------------------------------------------
 // Version: 3.0.0
@@ -430,7 +430,7 @@ Modified:
 // 		Improved performance (this script now runs every 15s and do not need to stress to 1 second)
 // 		Implemented comunications simulating radio to know enemy position
 //Errores corregidos y modificaciones
-//	Corregida la funci�n KRON_distancePosSqr que no devolvia la distanceX correcta entre dos puntos
+//	Corregida la funci�n KRON_distancePosSqr que no devolvia la distanceX correcta entre dos pointsX
 //	Corregido bug que no alimentaba correctamente el objectiveXcompartido cuando este fallecia
 //	Corregido control de la distanceX al objectiveX que hacia que la IA no flanquera
 //    Algoritmo de control de acci�n y movimiento modificado

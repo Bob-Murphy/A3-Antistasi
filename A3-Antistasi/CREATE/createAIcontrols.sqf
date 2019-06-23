@@ -1,20 +1,20 @@
 if (!isServer and hasInterface) exitWith{};
 
-private ["_pos","_roadscon","_veh","_roads","_conquered","_dirVeh","_markerX","_positionX","_vehiclesX","_soldiers","_tam","_bunker","_groupE","_unit","_typeGroup","_grupo","_timeLimit","_dateLimit","_dateLimitNum","_base","_perro","_lado","_cfg","_esFIA","_salir","_isControl","_tam","_typeVehX","_typeUnit","_markersX","_frontierX","_uav","_groupUAV","_allUnits","_closest","_winner","_timeLimit","_dateLimit","_dateLimitNum","_size","_base","_mina","_loser","_lado"];
+private ["_pos","_roadscon","_veh","_roads","_conquered","_dirVeh","_markerX","_positionX","_vehiclesX","_soldiers","_radiusX","_bunker","_groupE","_unit","_typeGroup","_groupX","_timeLimit","_dateLimit","_dateLimitNum","_base","_dog","_sideX","_cfg","_isFIA","_leave","_isControl","_radiusX","_typeVehX","_typeUnit","_markersX","_frontierX","_uav","_groupUAV","_allUnits","_closest","_winner","_timeLimit","_dateLimit","_dateLimitNum","_size","_base","_mineX","_loser","_sideX"];
 
 _markerX = _this select 0;
 _positionX = getMarkerPos _markerX;
-_lado = lados getVariable [_markerX,sideUnknown];
+_sideX = sidesX getVariable [_markerX,sideUnknown];
 
-if ((_lado == teamPlayer) or (_lado == sideUnknown)) exitWith {};
-if ({if ((lados getVariable [_x,sideUnknown] != _lado) and (_positionX inArea _x)) exitWith {1}} count markersX >1) exitWith {};
+if ((_sideX == teamPlayer) or (_sideX == sideUnknown)) exitWith {};
+if ({if ((sidesX getVariable [_x,sideUnknown] != _sideX) and (_positionX inArea _x)) exitWith {1}} count markersX >1) exitWith {};
 _vehiclesX = [];
 _soldiers = [];
-_pilotos = [];
+_pilots = [];
 _conquered = false;
-_grupo = grpNull;
-_esFIA = false;
-_salir = false;
+_groupX = grpNull;
+_isFIA = false;
+_leave = false;
 
 _isControl = if (isOnRoad _positionX) then {true} else {false};
 
@@ -22,31 +22,31 @@ if (_isControl) then
 	{
 	if (gameMode != 4) then
 		{
-		if (_lado == malos) then
+		if (_sideX == Occupants) then
 			{
 			if ((random 10 > (tierWar + difficultyCoef)) and (!([_markerX] call A3A_fnc_isFrontline))) then
 				{
-				_esFIA = true;
+				_isFIA = true;
 				}
 			};
 		}
 	else
 		{
-		if (_lado == Invaders) then
+		if (_sideX == Invaders) then
 			{
 			if ((random 10 > (tierWar + difficultyCoef)) and (!([_markerX] call A3A_fnc_isFrontline))) then
 				{
-				_esFIA = true;
+				_isFIA = true;
 				}
 			};
 		};
 
-	_tam = 20;
+	_radiusX = 20;
 	while {true} do
 		{
-		_roads = _positionX nearRoads _tam;
+		_roads = _positionX nearRoads _radiusX;
 		if (count _roads > 1) exitWith {};
-		_tam = _tam + 5;
+		_radiusX = _radiusX + 5;
 		};
 
 	_roadscon = roadsConnectedto (_roads select 0);
@@ -54,7 +54,7 @@ if (_isControl) then
 	_dirveh = [_roads select 0, _roadscon select 0] call BIS_fnc_DirTo;
 	if ((isNull (_roads select 0)) or (isNull (_roadscon select 0))) then {diag_log format ["Antistasi Roadblock error report: %1 position is bad",_markerX]};
 
-	if (!_esFIA) then
+	if (!_isFIA) then
 		{
 		_groupE = grpNull;
 		if !(hasIFA) then
@@ -64,14 +64,14 @@ if (_isControl) then
 			_vehiclesX pushBack _bunker;
 			_bunker setDir _dirveh;
 			_pos = getPosATL _bunker;
-			_typeVehX = if (_lado == malos) then {NATOMG} else {CSATMG};
+			_typeVehX = if (_sideX == Occupants) then {NATOMG} else {CSATMG};
 			_veh = _typeVehX createVehicle _positionX;
 			_vehiclesX pushBack _veh;
 			_veh setPosATL _pos;
 			_veh setDir _dirVeh;
 
-			_groupE = createGroup _lado;
-			_typeUnit = if (_lado == malos) then {staticCrewOccupants} else {staticCrewInvaders};
+			_groupE = createGroup _sideX;
+			_typeUnit = if (_sideX == Occupants) then {staticCrewOccupants} else {staticCrewInvaders};
 			_unit = _groupE createUnit [_typeUnit, _positionX, [], 0, "NONE"];
 			_unit moveInGunner _veh;
 			_soldiers pushBack _unit;
@@ -82,7 +82,7 @@ if (_isControl) then
 			_bunker setDir _dirveh + 180;
 			_pos = getPosATL _bunker;
 			_pos = [getPos _bunker, 6, getDir _bunker] call BIS_fnc_relPos;
-			_typeVehX = if (_lado == malos) then {NATOFlag} else {CSATFlag};
+			_typeVehX = if (_sideX == Occupants) then {NATOFlag} else {CSATFlag};
 			_veh = createVehicle [_typeVehX, _pos, [],0, "CAN_COLLIDE"];
 			_vehiclesX pushBack _veh;
 			_veh = _typeVehX createVehicle _positionX;
@@ -96,22 +96,22 @@ if (_isControl) then
 			sleep 1;
 			{_nul = [_x] call A3A_fnc_AIVEHinit} forEach _vehiclesX;
 			};
-		_typeGroup = if (_lado == malos) then {selectRandom groupsNATOmid} else {selectRandom groupsCSATmid};
-		_grupo = if !(hasIFA) then {[_positionX,_lado, _typeGroup,false,true] call A3A_fnc_spawnGroup} else {[_positionX,_lado, _typeGroup] call A3A_fnc_spawnGroup};
-		if !(isNull _grupo) then
+		_typeGroup = if (_sideX == Occupants) then {selectRandom groupsNATOmid} else {selectRandom groupsCSATmid};
+		_groupX = if !(hasIFA) then {[_positionX,_sideX, _typeGroup,false,true] call A3A_fnc_spawnGroup} else {[_positionX,_sideX, _typeGroup] call A3A_fnc_spawnGroup};
+		if !(isNull _groupX) then
 			{
 			if !(hasIFA) then
 				{
-				{[_x] join _grupo} forEach units _groupE;
+				{[_x] join _groupX} forEach units _groupE;
 				deleteGroup _groupE;
 				};
 			if (random 10 < 2.5) then
 				{
-				_perro = _grupo createUnit ["Fin_random_F",_positionX,[],0,"FORM"];
-				[_perro,_grupo] spawn A3A_fnc_guardDog;
+				_dog = _groupX createUnit ["Fin_random_F",_positionX,[],0,"FORM"];
+				[_dog,_groupX] spawn A3A_fnc_guardDog;
 				};
-			_nul = [leader _grupo, _markerX, "SAFE","SPAWNED","NOVEH2","NOFOLLOW"] execVM "scripts\UPSMON.sqf";
-			{[_x,""] call A3A_fnc_NATOinit; _soldiers pushBack _x} forEach units _grupo;
+			_nul = [leader _groupX, _markerX, "SAFE","SPAWNED","NOVEH2","NOFOLLOW"] execVM "scripts\UPSMON.sqf";
+			{[_x,""] call A3A_fnc_NATOinit; _soldiers pushBack _x} forEach units _groupX;
 			};
 		}
 	else
@@ -123,59 +123,59 @@ if (_isControl) then
 		_vehiclesX pushBack _veh;
 		sleep 1;
 		_typeGroup = selectRandom groupsFIAMid;
-		_grupo = if !(hasIFA) then {[_positionX, _lado, _typeGroup,false,true] call A3A_fnc_spawnGroup} else {[_positionX, _lado, _typeGroup] call A3A_fnc_spawnGroup};
-		if !(isNull _grupo) then
+		_groupX = if !(hasIFA) then {[_positionX, _sideX, _typeGroup,false,true] call A3A_fnc_spawnGroup} else {[_positionX, _sideX, _typeGroup] call A3A_fnc_spawnGroup};
+		if !(isNull _groupX) then
 			{
-			_unit = _grupo createUnit [FIARifleman, _positionX, [], 0, "NONE"];
+			_unit = _groupX createUnit [FIARifleman, _positionX, [], 0, "NONE"];
 			_unit moveInGunner _veh;
-			{_soldiers pushBack _x; [_x,""] call A3A_fnc_NATOinit} forEach units _grupo;
+			{_soldiers pushBack _x; [_x,""] call A3A_fnc_NATOinit} forEach units _groupX;
 			};
 		};
 	}
 else
 	{
-	_markersX = markersX select {(getMarkerPos _x distance _positionX < distanceSPWN) and (lados getVariable [_x,sideUnknown] == teamPlayer)};
+	_markersX = markersX select {(getMarkerPos _x distance _positionX < distanceSPWN) and (sidesX getVariable [_x,sideUnknown] == teamPlayer)};
 	_markersX = _markersX - ["Synd_HQ"] - outpostsFIA;
 	_frontierX = if (count _markersX > 0) then {true} else {false};
 	if (_frontierX) then
 		{
 		_cfg = CSATSpecOp;
-		if (lados getVariable [_markerX,sideUnknown] == malos) then
+		if (sidesX getVariable [_markerX,sideUnknown] == Occupants) then
 			{
 			_cfg = NATOSpecOp;
-			_lado = malos;
+			_sideX = Occupants;
 			};
 		_size = [_markerX] call A3A_fnc_sizeMarker;
 		if ({if (_x inArea _markerX) exitWith {1}} count allMines == 0) then
 			{
 			for "_i" from 1 to 60 do
 				{
-				_mina = createMine ["APERSMine",_positionX,[],_size];
-				if (_lado == malos) then {malos revealMine _mina} else {Invaders revealMine _mina};
+				_mineX = createMine ["APERSMine",_positionX,[],_size];
+				if (_sideX == Occupants) then {Occupants revealMine _mineX} else {Invaders revealMine _mineX};
 				};
 			};
-		_grupo = [_positionX,_lado, _cfg] call A3A_fnc_spawnGroup;
-		_nul = [leader _grupo, _markerX, "SAFE","SPAWNED","RANDOM","NOVEH2","NOFOLLOW"] execVM "scripts\UPSMON.sqf";
+		_groupX = [_positionX,_sideX, _cfg] call A3A_fnc_spawnGroup;
+		_nul = [leader _groupX, _markerX, "SAFE","SPAWNED","RANDOM","NOVEH2","NOFOLLOW"] execVM "scripts\UPSMON.sqf";
 		if !(hasIFA) then
 			{
 			sleep 1;
-			{_soldiers pushBack _x} forEach units _grupo;
-			_typeVehX = if (_lado == malos) then {vehNATOUAVSmall} else {vehCSATUAVSmall};
+			{_soldiers pushBack _x} forEach units _groupX;
+			_typeVehX = if (_sideX == Occupants) then {vehNATOUAVSmall} else {vehCSATUAVSmall};
 			_uav = createVehicle [_typeVehX, _positionX, [], 0, "FLY"];
 			createVehicleCrew _uav;
 			_vehiclesX pushBack _uav;
 			_groupUAV = group (crew _uav select 1);
-			{[_x] joinSilent _grupo; _pilotos pushBack _x} forEach units _groupUAV;
+			{[_x] joinSilent _groupX; _pilots pushBack _x} forEach units _groupUAV;
 			deleteGroup _groupUAV;
 			};
-		{[_x,""] call A3A_fnc_NATOinit} forEach units _grupo;
+		{[_x,""] call A3A_fnc_NATOinit} forEach units _groupX;
 		}
 	else
 		{
-		_salir = true;
+		_leave = true;
 		};
 	};
-if (_salir) exitWith {};
+if (_leave) exitWith {};
 _spawnStatus = 0;
 while {(spawner getVariable _markerX != 2) and ({[_x,_markerX] call A3A_fnc_canConquer} count _soldiers > 0)} do
 	{
@@ -212,46 +212,46 @@ while {(spawner getVariable _markerX != 2) and ({[_x,_markerX] call A3A_fnc_canC
 waitUntil {sleep 1;((spawner getVariable _markerX == 2))  or ({[_x,_markerX] call A3A_fnc_canConquer} count _soldiers == 0)};
 
 _conquered = false;
-_winner = malos;
+_winner = Occupants;
 if (spawner getVariable _markerX != 2) then
 	{
 	_conquered = true;
-	_allUnits = allUnits select {(side _x != civilian) and (side _x != _lado) and (alive _x) and (!captive _x)};
+	_allUnits = allUnits select {(side _x != civilian) and (side _x != _sideX) and (alive _x) and (!captive _x)};
 	_closest = [_allUnits,_positionX] call BIS_fnc_nearestPosition;
 	_winner = side _closest;
-	_loser = malos;
+	_loser = Occupants;
 	if (_isControl) then
 		{
 		["TaskSucceeded", ["", "Roadblock Destroyed"]] remoteExec ["BIS_fnc_showNotification",_winner];
-		["TaskFailed", ["", "Roadblock Lost"]] remoteExec ["BIS_fnc_showNotification",_lado];
+		["TaskFailed", ["", "Roadblock Lost"]] remoteExec ["BIS_fnc_showNotification",_sideX];
 		};
-	if (lados getVariable [_markerX,sideUnknown] == malos) then
+	if (sidesX getVariable [_markerX,sideUnknown] == Occupants) then
 		{
 		if (_winner == Invaders) then
 			{
 			_nul = [-5,0,_positionX] remoteExec ["A3A_fnc_citySupportChange",2];
-			lados setVariable [_markerX,Invaders,true];
+			sidesX setVariable [_markerX,Invaders,true];
 			}
 		else
 			{
-			lados setVariable [_markerX,teamPlayer,true];
+			sidesX setVariable [_markerX,teamPlayer,true];
 			};
 		}
 	else
 		{
 		_loser = Invaders;
-		if (_winner == malos) then
+		if (_winner == Occupants) then
 			{
-			lados setVariable [_markerX,malos,true];
+			sidesX setVariable [_markerX,Occupants,true];
 			_nul = [5,0,_positionX] remoteExec ["A3A_fnc_citySupportChange",2];
 			}
 		else
 			{
-			lados setVariable [_markerX,teamPlayer,true];
+			sidesX setVariable [_markerX,teamPlayer,true];
 			_nul = [0,5,_positionX] remoteExec ["A3A_fnc_citySupportChange",2];
 			};
 		};
-	if (_winner == teamPlayer) then {[[_positionX,_lado,"",false],"A3A_fnc_patrolCA"] remoteExec ["A3A_fnc_scheduler",2]};
+	if (_winner == teamPlayer) then {[[_positionX,_sideX,"",false],"A3A_fnc_patrolCA"] remoteExec ["A3A_fnc_scheduler",2]};
 	};
 
 waitUntil {sleep 1;(spawner getVariable _markerX == 2)};
@@ -268,8 +268,8 @@ if (alive _x) then
 	if (_x != vehicle _x) then {deleteVehicle (vehicle _x)};
 	deleteVehicle _x
 	}
-} forEach (_soldiers + _pilotos);
-deleteGroup _grupo;
+} forEach (_soldiers + _pilots);
+deleteGroup _groupX;
 
 if (_conquered) then
 	{
@@ -281,15 +281,15 @@ if (_conquered) then
 		_dateLimitNum = dateToNumber _dateLimit;
 		waitUntil {sleep 60;(dateToNumber date > _dateLimitNum)};
 		_base = [(markersX - controlsX),_positionX] call BIS_fnc_nearestPosition;
-		if (lados getVariable [_base,sideUnknown] == malos) then
+		if (sidesX getVariable [_base,sideUnknown] == Occupants) then
 			{
-			lados setVariable [_markerX,malos,true];
+			sidesX setVariable [_markerX,Occupants,true];
 			}
 		else
 			{
-			if (lados getVariable [_base,sideUnknown] == Invaders) then
+			if (sidesX getVariable [_base,sideUnknown] == Invaders) then
 				{
-				lados setVariable [_markerX,Invaders,true];
+				sidesX setVariable [_markerX,Invaders,true];
 				};
 			};
 		}
@@ -301,8 +301,8 @@ if (_conquered) then
 			_size = [_markerX] call A3A_fnc_sizeMarker;
 			for "_i" from 1 to 60 do
 				{
-				_mina = createMine ["APERSMine",_positionX,[],_size];
-				if (_loser == malos) then {malos revealMine _mina} else {Invaders revealMine _mina};
+				_mineX = createMine ["APERSMine",_positionX,[],_size];
+				if (_loser == Occupants) then {Occupants revealMine _mineX} else {Invaders revealMine _mineX};
 				};
 			};
 		*/

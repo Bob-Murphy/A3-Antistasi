@@ -1,10 +1,10 @@
 _markerX = _this select 0;
-_tipo = _this select 1;
+_typeX = _this select 1;
 _positionX = getMarkerPos _markerX;
-if (_tipo isEqualType "") then
+if (_typeX isEqualType "") then
 	{
-	_groups = if (_tipo == staticCrewTeamPlayer) then {[]} else {allGroups select {(leader _x getVariable ["markerX",""] == _markerX) and (count units _x < 8) and (vehicle (leader _x) == leader _x)}};
-	_grupo = if (_groups isEqualTo []) then
+	_groups = if (_typeX == staticCrewTeamPlayer) then {[]} else {allGroups select {(leader _x getVariable ["markerX",""] == _markerX) and (count units _x < 8) and (vehicle (leader _x) == leader _x)}};
+	_groupX = if (_groups isEqualTo []) then
 		{
 		createGroup teamPlayer
 		}
@@ -12,10 +12,10 @@ if (_tipo isEqualType "") then
 		{
 		_groups select 0;
 		};
-	_unit = _grupo createUnit [_tipo, _positionX, [], 0, "NONE"];
-	//if (_tipo in SDKSL) then {_grupo selectLeader _unit};
+	_unit = _groupX createUnit [_typeX, _positionX, [], 0, "NONE"];
+	//if (_typeX in SDKSL) then {_groupX selectLeader _unit};
 	[_unit,_markerX] call A3A_fnc_FIAinitBases;
-	if (_tipo == staticCrewTeamPlayer) then
+	if (_typeX == staticCrewTeamPlayer) then
 		{
 		private _veh = SDKMortar createVehicle _positionX;
 		_nul=[_veh] execVM "scripts\UPSMON\MON_artillery_add.sqf";
@@ -25,7 +25,7 @@ if (_tipo isEqualType "") then
 		};
 	if (_groups isEqualTo []) then
 		{
-		_nul = [leader _grupo, _markerX, "SAFE","SPAWNED","NOVEH2","NOFOLLOW"] execVM "scripts\UPSMON.sqf";
+		_nul = [leader _groupX, _markerX, "SAFE","SPAWNED","NOVEH2","NOFOLLOW"] execVM "scripts\UPSMON.sqf";
 		};
 	[_unit,_markerX] spawn
 		{
@@ -34,10 +34,10 @@ if (_tipo isEqualType "") then
 		waitUntil {sleep 1; (spawner getVariable _markerX == 2)};
 		if (alive _unit) then
 			{
-			private _grupo = group _unit;
+			private _groupX = group _unit;
 			if (typeOf _unit == staticCrewTeamPlayer) then {deleteVehicle (vehicle _unit)};
 			deleteVehicle _unit;
-			if (count units _grupo == 0) then {deleteGroup _grupo};
+			if (count units _groupX == 0) then {deleteGroup _groupX};
 			};
 		};
 	};

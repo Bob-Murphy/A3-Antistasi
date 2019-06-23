@@ -39,13 +39,13 @@ if (isServer and !_byPassServer) then
 	["difficultyX"] call fn_LoadStat;
 	["gameMode"] call fn_LoadStat;
 	["destroyedCities"] call fn_LoadStat;
-	["minas"] call fn_LoadStat;
+	["minesX"] call fn_LoadStat;
 	["countCA"] call fn_LoadStat;
 	["antennas"] call fn_LoadStat;
 	["prestigeNATO"] call fn_LoadStat;
 	["prestigeCSAT"] call fn_LoadStat;
 	["hr"] call fn_LoadStat;
-	["fecha"] call fn_LoadStat;
+	["dateX"] call fn_LoadStat;
 	["weather"] call fn_LoadStat;
 	["prestigeOPFOR"] call fn_LoadStat;
 	["prestigeBLUFOR"] call fn_LoadStat;
@@ -94,36 +94,36 @@ if (isServer and !_byPassServer) then
 	//unlockedRifles = unlockedweapons select {_x in arifles}; publicVariable "unlockedRifles";
 
 	{
-	_arma = _x;
-	if (_arma in arifles) then
+	_weaponX = _x;
+	if (_weaponX in arifles) then
 		{
-		unlockedRifles pushBack _arma;
-		if (count (getArray (configfile >> "CfgWeapons" >> _arma >> "muzzles")) == 2) then
+		unlockedRifles pushBack _weaponX;
+		if (count (getArray (configfile >> "CfgWeapons" >> _weaponX >> "muzzles")) == 2) then
 			{
-			unlockedGL pushBack _arma;
+			unlockedGL pushBack _weaponX;
 			};
 		}
 	else
 		{
-		if (_arma in mguns) then
+		if (_weaponX in mguns) then
 			{
-			unlockedMG pushBack _arma;
+			unlockedMG pushBack _weaponX;
 			}
 		else
 			{
-			if (_arma in srifles) then
+			if (_weaponX in srifles) then
 				{
-				unlockedSN pushBack _arma;
+				unlockedSN pushBack _weaponX;
 				}
 			else
 				{
-				if (_arma in ((rlaunchers + mlaunchers) select {(getNumber (configfile >> "CfgWeapons" >> _x >> "lockAcquire") == 0)})) then
+				if (_weaponX in ((rlaunchers + mlaunchers) select {(getNumber (configfile >> "CfgWeapons" >> _x >> "lockAcquire") == 0)})) then
 					{
-					unlockedAT pushBack _arma;
+					unlockedAT pushBack _weaponX;
 					}
 				else
 					{
-					if (_arma in (mlaunchers select {(getNumber (configfile >> "CfgWeapons" >> _x >> "lockAcquire") == 1)})) then {unlockedAA pushBack _arma};
+					if (_weaponX in (mlaunchers select {(getNumber (configfile >> "CfgWeapons" >> _x >> "lockAcquire") == 1)})) then {unlockedAA pushBack _weaponX};
 					};
 				};
 			};
@@ -141,20 +141,20 @@ if (isServer and !_byPassServer) then
 	if (!haveRadio) then {if ("ItemRadio" in unlockedItems) then {haveRadio = true; publicVariable "haveRadio"}};
 
 	{
-	if (lados getVariable [_x,sideUnknown] != teamPlayer) then
+	if (sidesX getVariable [_x,sideUnknown] != teamPlayer) then
 		{
 		_positionX = getMarkerPos _x;
 		_nearX = [(markersX - controlsX - outpostsFIA),_positionX] call BIS_fnc_nearestPosition;
-		_lado = lados getVariable [_nearX,sideUnknown];
-		lados setVariable [_x,_lado,true];
+		_sideX = sidesX getVariable [_nearX,sideUnknown];
+		sidesX setVariable [_x,_sideX,true];
 		};
 	} forEach controlsX;
 
 
 	{
-	if (lados getVariable [_x,sideUnknown] == sideUnknown) then
+	if (sidesX getVariable [_x,sideUnknown] == sideUnknown) then
 		{
-		lados setVariable [_x,malos,true];
+		sidesX setVariable [_x,Occupants,true];
 		};
 	} forEach markersX;
 
@@ -177,15 +177,15 @@ if (isServer and !_byPassServer) then
 
 
 	if (!isMultiPlayer) then {player setPos getMarkerPos respawnTeamPlayer} else {{_x setPos getMarkerPos respawnTeamPlayer} forEach (playableUnits select {side _x == teamPlayer})};
-	_sitios = markersX select {lados getVariable [_x,sideUnknown] == teamPlayer};
-	tierWar = 1 + (floor (((5*({(_x in outposts) or (_x in resourcesX) or (_x in citiesX)} count _sitios)) + (10*({_x in seaports} count _sitios)) + (20*({_x in airportsX} count _sitios)))/10));
+	_sites = markersX select {sidesX getVariable [_x,sideUnknown] == teamPlayer};
+	tierWar = 1 + (floor (((5*({(_x in outposts) or (_x in resourcesX) or (_x in citiesX)} count _sites)) + (10*({_x in seaports} count _sites)) + (20*({_x in airportsX} count _sites)))/10));
 	if (tierWar > 10) then {tierWar = 10};
 	publicVariable "tierWar";
 
-	clearMagazineCargoGlobal caja;
-	clearWeaponCargoGlobal caja;
-	clearItemCargoGlobal caja;
-	clearBackpackCargoGlobal caja;
+	clearMagazineCargoGlobal boxX;
+	clearWeaponCargoGlobal boxX;
+	clearItemCargoGlobal boxX;
+	clearBackpackCargoGlobal boxX;
 
 	[] remoteExec ["A3A_fnc_statistics",[teamPlayer,civilian]];
 	diag_log "Antistasi: Server sided Persistent Load done";
@@ -198,7 +198,7 @@ if (isServer and !_byPassServer) then
 		_dmrk = createMarker [format ["Dum%1",_x], _pos];
 		_dmrk setMarkerShape "ICON";
 		[_x] call A3A_fnc_mrkUpdate;
-		if (lados getVariable [_x,sideUnknown] != teamPlayer) then
+		if (sidesX getVariable [_x,sideUnknown] != teamPlayer) then
 			{
 			_nul = [_x] call A3A_fnc_createControls;
 			};
@@ -211,7 +211,7 @@ if (isServer and !_byPassServer) then
 		_dmrk setMarkerType "loc_rock";
 		_dmrk setMarkerText "Resources";
 		[_x] call A3A_fnc_mrkUpdate;
-		if (lados getVariable [_x,sideUnknown] != teamPlayer) then
+		if (sidesX getVariable [_x,sideUnknown] != teamPlayer) then
 			{
 			_nul = [_x] call A3A_fnc_createControls;
 			};
@@ -224,7 +224,7 @@ if (isServer and !_byPassServer) then
 		_dmrk setMarkerType "u_installation";
 		_dmrk setMarkerText "Factory";
 		[_x] call A3A_fnc_mrkUpdate;
-		if (lados getVariable [_x,sideUnknown] != teamPlayer) then
+		if (sidesX getVariable [_x,sideUnknown] != teamPlayer) then
 			{
 			_nul = [_x] call A3A_fnc_createControls;
 			};
@@ -236,7 +236,7 @@ if (isServer and !_byPassServer) then
 		_dmrk setMarkerShape "ICON";
 		_dmrk setMarkerType "loc_bunker";
 		[_x] call A3A_fnc_mrkUpdate;
-		if (lados getVariable [_x,sideUnknown] != teamPlayer) then
+		if (sidesX getVariable [_x,sideUnknown] != teamPlayer) then
 			{
 			_nul = [_x] call A3A_fnc_createControls;
 			};
@@ -249,13 +249,13 @@ if (isServer and !_byPassServer) then
 		_dmrk setMarkerType "b_naval";
 		_dmrk setMarkerText "Sea Port";
 		[_x] call A3A_fnc_mrkUpdate;
-		if (lados getVariable [_x,sideUnknown] != teamPlayer) then
+		if (sidesX getVariable [_x,sideUnknown] != teamPlayer) then
 			{
 			_nul = [_x] call A3A_fnc_createControls;
 			};
 		} forEach seaports;
-		lados setVariable ["NATO_carrier",malos,true];
-		lados setVariable ["CSAT_carrier",Invaders,true];
+		sidesX setVariable ["NATO_carrier",Occupants,true];
+		sidesX setVariable ["CSAT_carrier",Invaders,true];
 		};
 	statsLoaded = 0; publicVariable "statsLoaded";
 	placementDone = true; publicVariable "placementDone";

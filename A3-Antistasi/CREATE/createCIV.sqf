@@ -1,22 +1,22 @@
 if (!isServer and hasInterface) exitWith{};
 
-private ["_markerX","_datos","_numCiv","_numVeh","_roads","_prestigeOPFOR","_prestigeBLUFOR","_civs","_groups","_vehiclesX","_civsPatrol","_groupsPatrol","_vehPatrol","_typeCiv","_typeVehX","_dirVeh","_countX","_grupo","_size","_road","_typeVehX","_dirVeh","_positionX","_area","_civ","_veh","_roadcon","_pos","_p1","_p2","_mrkMar","_patrolCities","_countPatrol","_burst","_groupP","_wp","_wp1"];
+private ["_markerX","_dataX","_numCiv","_numVeh","_roads","_prestigeOPFOR","_prestigeBLUFOR","_civs","_groups","_vehiclesX","_civsPatrol","_groupsPatrol","_vehPatrol","_typeCiv","_typeVehX","_dirVeh","_countX","_groupX","_size","_road","_typeVehX","_dirVeh","_positionX","_area","_civ","_veh","_roadcon","_pos","_p1","_p2","_mrkMar","_patrolCities","_countPatrol","_burst","_groupP","_wp","_wp1"];
 
 _markerX = _this select 0;
 
 if (_markerX in destroyedCities) exitWith {};
 
-_datos = server getVariable _markerX;
+_dataX = server getVariable _markerX;
 
-_numCiv = _datos select 0;
-_numVeh = _datos select 1;
-//_roads = _datos select 2;
+_numCiv = _dataX select 0;
+_numVeh = _dataX select 1;
+//_roads = _dataX select 2;
 _roads = roadsX getVariable _markerX;//
-//_prestigeOPFOR = _datos select 3;
-//_prestigeBLUFOR = _datos select 4;
+//_prestigeOPFOR = _dataX select 3;
+//_prestigeBLUFOR = _dataX select 4;
 
-_prestigeOPFOR = _datos select 2;
-_prestigeBLUFOR = _datos select 3;
+_prestigeOPFOR = _dataX select 2;
+_prestigeBLUFOR = _dataX select 3;
 
 _civs = [];
 _groups = [];
@@ -64,7 +64,7 @@ while {(spawner getVariable _markerX != 2) and (_countX < _numVeh) and (_countX 
 		    _mrk setMarkerShape "RECTANGLE";
 		    _mrk setMarkerBrush "SOLID";
 		    _mrk setMarkerColor colourTeamPlayer;
-		    //_mrk setMarkerText _nombre;
+		    //_mrk setMarkerText _nameX;
 		    */
 			_veh = _typeVehX createVehicle _pos;
 			_veh setDir _dirveh;
@@ -102,9 +102,9 @@ if ((random 100 < ((prestigeNATO) + (prestigeCSAT))) and (spawner getVariable _m
 		_pos = [_positionX, round (random _area), random 360] call BIS_Fnc_relPos;
 		if (!surfaceIsWater _pos) exitWith {};
 		};
-	_grupo = createGroup civilian;
-	_groups pushBack _grupo;
-	_civ = _grupo createUnit ["C_journalist_F", _pos, [],0, "NONE"];
+	_groupX = createGroup civilian;
+	_groups pushBack _groupX;
+	_civ = _groupX createUnit ["C_journalist_F", _pos, [],0, "NONE"];
 	_nul = [_civ] spawn A3A_fnc_CIVinit;
 	_civs pushBack _civ;
 	_nul = [_civ, _markerX, "SAFE", "SPAWNED","NOFOLLOW", "NOVEH2","NOSHARE","DoRelax"] execVM "scripts\UPSMON.sqf";

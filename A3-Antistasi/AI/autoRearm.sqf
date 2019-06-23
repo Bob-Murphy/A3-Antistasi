@@ -1,4 +1,4 @@
-private ["_unit","_Pweapon","_Sweapon","_countX","_magazines","_hasBox","_distanceX","_objectsX","_target","_muerto","_check","_timeOut","_arma","_weaponsX","_rearming","_basePossible","_hmd","_casco","_truckX","_autoLoot","_itemsUnit"];
+private ["_unit","_Pweapon","_Sweapon","_countX","_magazines","_hasBox","_distanceX","_objectsX","_target","_victim","_check","_timeOut","_weaponX","_weaponsX","_rearming","_basePossible","_hmd","_helmet","_truckX","_autoLoot","_itemsUnit"];
 
 _unit = _this select 0;
 
@@ -17,36 +17,36 @@ _Sweapon = secondaryWeapon _unit;
 
 _objectsX = [];
 _hasBox = false;
-_arma = "";
+_weaponX = "";
 _weaponsX = [];
 _distanceX = 51;
 _objectsX = nearestObjects [_unit, ["ReammoBox_F","LandVehicle","WeaponHolderSimulated", "GroundWeaponHolder", "WeaponHolder"], 50];
-if (caja in _objectsX) then {_objectsX = _objectsX - [caja]};
+if (boxX in _objectsX) then {_objectsX = _objectsX - [boxX]};
 
-_necesita = false;
+_needsRearm = false;
 
 if ((_Pweapon in initialRifles) or (_Pweapon == "")) then
 	{
-	_necesita = true;
+	_needsRearm = true;
 	if (count _objectsX > 0) then
 		{
 		{
-		_objeto = _x;
-		if (_unit distance _objeto < _distanceX) then
+		_objectX = _x;
+		if (_unit distance _objectX < _distanceX) then
 			{
-			if ((count weaponCargo _objeto > 0) and !(_objeto getVariable ["busy",false])) then
+			if ((count weaponCargo _objectX > 0) and !(_objectX getVariable ["busy",false])) then
 				{
-				_weaponsX = weaponCargo _objeto;
+				_weaponsX = weaponCargo _objectX;
 				for "_i" from 0 to (count _weaponsX - 1) do
 					{
 					_potential = _weaponsX select _i;
 					_basePossible = [_potential] call BIS_fnc_baseWeapon;
 					if ((not(_basePossible in ["hgun_PDW2000_F","hgun_Pistol_01_F","hgun_ACPC2_F","arifle_AKM_F","arifle_AKS_F","SMG_05_F","LMG_03_F"])) and ((_basePossible in arifles) or (_basePossible in srifles) or (_basePossible in mguns))) then
 						{
-						_target = _objeto;
+						_target = _objectX;
 						_hasBox = true;
-						_distanceX = _unit distance _objeto;
-						_arma = _potential;
+						_distanceX = _unit distance _objectX;
+						_weaponX = _potential;
 						};
 					};
 				};
@@ -64,9 +64,9 @@ if ((_Pweapon in initialRifles) or (_Pweapon == "")) then
 		if ((unitReady _unit) and ([_unit] call A3A_fnc_canFight) and (_unit distance _target > 3) and (_target isKindOf "ReammoBox_F") and (!isNull _target)) then {_unit setPos position _target};
 		if (_unit distance _target < 3) then
 			{
-			_unit action ["TakeWeapon",_target,_arma];
+			_unit action ["TakeWeapon",_target,_weaponX];
 			sleep 5;
-			if (primaryWeapon _unit == _arma) then
+			if (primaryWeapon _unit == _weaponX) then
 				{
 				if (_inPlayerGroup) then {_unit groupChat "I have a better weapon now"};
 				if (_target isKindOf "ReammoBox_F") then {_unit action ["rearm",_target]};
@@ -84,33 +84,33 @@ if (_Pweapon in mguns) then {_countX = 2};
 _magazines = getArray (configFile / "CfgWeapons" / _Pweapon / "magazines");
 if ({_x in _magazines} count (magazines _unit) < _countX) then
 	{
-	_necesita = true;
+	_needsRearm = true;
 	_hasBox = false;
 	if (count _objectsX > 0) then
 		{
 		{
-		_objeto = _x;
-		if (({_x in _magazines} count magazineCargo _objeto) > 0) then
+		_objectX = _x;
+		if (({_x in _magazines} count magazineCargo _objectX) > 0) then
 			{
-			if (_unit distance _objeto < _distanceX) then
+			if (_unit distance _objectX < _distanceX) then
 				{
-				_target = _objeto;
+				_target = _objectX;
 				_hasBox = true;
-				_distanceX = _unit distance _objeto;
+				_distanceX = _unit distance _objectX;
 				};
 			};
 		} forEach _objectsX;
 		};
-	_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+	_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 	{
-	_muerto = _x;
-	if (({_x in _magazines} count (magazines _muerto) > 0) and (_unit distance _muerto < _distanceX)) then
+	_victim = _x;
+	if (({_x in _magazines} count (magazines _victim) > 0) and (_unit distance _victim < _distanceX)) then
 		{
-		_target = _muerto;
+		_target = _victim;
 		_hasBox = true;
-		_distanceX = _muerto distance _unit;
+		_distanceX = _victim distance _unit;
 		};
-	} forEach _muertos;
+	} forEach _victims;
 	};
 if ((_hasBox) and (_unit getVariable "rearming")) then
 	{
@@ -145,21 +145,21 @@ if ((_Sweapon == "") and (loadAbs _unit < 340)) then
 	if (count _objectsX > 0) then
 		{
 		{
-		_objeto = _x;
-		if (_unit distance _objeto < _distanceX) then
+		_objectX = _x;
+		if (_unit distance _objectX < _distanceX) then
 			{
-			if ((count weaponCargo _objeto > 0) and !(_objeto getVariable ["busy",false])) then
+			if ((count weaponCargo _objectX > 0) and !(_objectX getVariable ["busy",false])) then
 				{
-				_weaponsX = weaponCargo _objeto;
+				_weaponsX = weaponCargo _objectX;
 				for "_i" from 0 to (count _weaponsX - 1) do
 					{
 					_potential = _weaponsX select _i;
 					if ((_potential in mlaunchers) or (_potential in rlaunchers)) then
 						{
-						_target = _objeto;
+						_target = _objectX;
 						_hasBox = true;
-						_distanceX = _unit distance _objeto;
-						_arma = _potential;
+						_distanceX = _unit distance _objectX;
+						_weaponX = _potential;
 						};
 					};
 				};
@@ -177,9 +177,9 @@ if ((_Sweapon == "") and (loadAbs _unit < 340)) then
 		if ((unitReady _unit) and ([_unit] call A3A_fnc_canFight) and (_unit distance _target > 3) and (_target isKindOf "ReammoBox_F") and (!isNull _target)) then {_unit setPos position _target};
 		if (_unit distance _target < 3) then
 			{
-			_unit action ["TakeWeapon",_target,_arma];
+			_unit action ["TakeWeapon",_target,_weaponX];
 			sleep 3;
-			if (secondaryWeapon _unit == _arma) then
+			if (secondaryWeapon _unit == _weaponX) then
 				{
 				if (_inPlayerGroup) then {_unit groupChat "I have a secondary weapon now"};
 				if (_target isKindOf "ReammoBox_F") then {sleep 3;_unit action ["rearm",_target]};
@@ -197,34 +197,34 @@ if (_Sweapon != "") then
 	_magazines = getArray (configFile / "CfgWeapons" / _Sweapon / "magazines");
 	if ({_x in _magazines} count (magazines _unit) < 2) then
 		{
-		_necesita = true;
+		_needsRearm = true;
 		_hasBox = false;
 		_distanceX = 50;
 		if (count _objectsX > 0) then
 			{
 			{
-			_objeto = _x;
-			if ({_x in _magazines} count magazineCargo _objeto > 0) then
+			_objectX = _x;
+			if ({_x in _magazines} count magazineCargo _objectX > 0) then
 				{
-				if (_unit distance _objeto < _distanceX) then
+				if (_unit distance _objectX < _distanceX) then
 					{
-					_target = _objeto;
+					_target = _objectX;
 					_hasBox = true;
-					_distanceX = _unit distance _objeto;
+					_distanceX = _unit distance _objectX;
 					};
 				};
 			} forEach _objectsX;
 			};
-		_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+		_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 		{
-		_muerto = _x;
-		if (({_x in _magazines} count (magazines _muerto) > 0) and (_unit distance _muerto < _distanceX)) then
+		_victim = _x;
+		if (({_x in _magazines} count (magazines _victim) > 0) and (_unit distance _victim < _distanceX)) then
 			{
-			_target = _muerto;
+			_target = _victim;
 			_hasBox = true;
-			_distanceX = _muerto distance _unit;
+			_distanceX = _victim distance _unit;
 			};
-		} forEach _muertos;
+		} forEach _victims;
 		};
 	if ((_hasBox) and (_unit getVariable "rearming")) then
 		{
@@ -270,19 +270,19 @@ if (_Sweapon != "") then
 _hasBox = false;
 if ((not("ItemRadio" in assignedItems _unit)) and !haveRadio) then
 	{
-	_necesita = true;
+	_needsRearm = true;
 	_hasBox = false;
 	_distanceX = 50;
-	_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+	_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 	{
-	_muerto = _x;
-	if (("ItemRadio" in (assignedItems _muerto)) and (_unit distance _muerto < _distanceX)) then
+	_victim = _x;
+	if (("ItemRadio" in (assignedItems _victim)) and (_unit distance _victim < _distanceX)) then
 		{
-		_target = _muerto;
+		_target = _victim;
 		_hasBox = true;
-		_distanceX = _muerto distance _unit;
+		_distanceX = _victim distance _unit;
 		};
-	} forEach _muertos;
+	} forEach _victims;
 	if ((_hasBox) and (_unit getVariable "rearming")) then
 		{
 		_unit stop false;
@@ -303,19 +303,19 @@ if ((not("ItemRadio" in assignedItems _unit)) and !haveRadio) then
 _hasBox = false;
 if (hmd _unit == "") then
 	{
-	_necesita = true;
+	_needsRearm = true;
 	_hasBox = false;
 	_distanceX = 50;
-	_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+	_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 	{
-	_muerto = _x;
-	if ((hmd _muerto != "") and (_unit distance _muerto < _distanceX)) then
+	_victim = _x;
+	if ((hmd _victim != "") and (_unit distance _victim < _distanceX)) then
 		{
-		_target = _muerto;
+		_target = _victim;
 		_hasBox = true;
-		_distanceX = _muerto distance _unit;
+		_distanceX = _victim distance _unit;
 		};
-	} forEach _muertos;
+	} forEach _victims;
 
 	if ((_hasBox) and (_unit getVariable "rearming")) then
 		{
@@ -338,24 +338,24 @@ if (hmd _unit == "") then
 _hasBox = false;
 if (not(headgear _unit in helmets)) then
 	{
-	_necesita = true;
+	_needsRearm = true;
 	_hasBox = false;
 	_distanceX = 50;
-	_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+	_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 	{
-	_muerto = _x;
-	if (((headgear _muerto) in helmets) and (_unit distance _muerto < _distanceX)) then
+	_victim = _x;
+	if (((headgear _victim) in helmets) and (_unit distance _victim < _distanceX)) then
 		{
-		_target = _muerto;
+		_target = _victim;
 		_hasBox = true;
-		_distanceX = _muerto distance _unit;
+		_distanceX = _victim distance _unit;
 		};
-	} forEach _muertos;
+	} forEach _victims;
 	if ((_hasBox) and (_unit getVariable "rearming")) then
 		{
 		_unit stop false;
 		_target setVariable ["busy",true];
-		_casco = headgear _target;
+		_helmet = headgear _target;
 		_unit doMove (getPosATL _target);
 		if (_inPlayerGroup) then {_unit groupChat "Picking a Helmet"};
 		_timeOut = time + 60;
@@ -363,7 +363,7 @@ if (not(headgear _unit in helmets)) then
 		if (_unit distance _target < 3) then
 			{
 			_unit action ["rearm",_target];
-			_unit addHeadgear _casco;
+			_unit addHeadgear _helmet;
 			removeHeadgear _target;
 			};
 		_target setVariable ["busy",false];
@@ -374,19 +374,19 @@ _minFA = if ([_unit] call A3A_fnc_isMedic) then {10} else {1};
 
 if ({_x == "FirstAidKit"} count (items _unit) < _minFA) then
 	{
-	_necesita = true;
+	_needsRearm = true;
 	_hasBox = false;
 	_distanceX = 50;
-	_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+	_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 	{
-	_muerto = _x;
-	if (("FirstAidKit" in items _muerto) and (_unit distance _muerto < _distanceX)) then
+	_victim = _x;
+	if (("FirstAidKit" in items _victim) and (_unit distance _victim < _distanceX)) then
 		{
-		_target = _muerto;
+		_target = _victim;
 		_hasBox = true;
-		_distanceX = _muerto distance _unit;
+		_distanceX = _victim distance _unit;
 		};
-	} forEach _muertos;
+	} forEach _victims;
 	if ((_hasBox) and (_unit getVariable "rearming")) then
 		{
 		_unit stop false;
@@ -402,25 +402,25 @@ if ({_x == "FirstAidKit"} count (items _unit) < _minFA) then
 				_unit action ["rearm",_target];
 				_unit addItem "FirstAidKit";
 				_target removeItem "FirstAidKit";
-				if ("FirstAidKit" in items _muerto) then {sleep 3};
+				if ("FirstAidKit" in items _victim) then {sleep 3};
 				};
 			};
 		_target setVariable ["busy",false];
 		};
 	};
 _hasBox = false;
-_numero = getNumber (configfile >> "CfgWeapons" >> vest cursortarget >> "ItemInfo" >> "HitpointsProtectionInfo" >> "Chest" >> "armor");
+_numberX = getNumber (configfile >> "CfgWeapons" >> vest cursortarget >> "ItemInfo" >> "HitpointsProtectionInfo" >> "Chest" >> "armor");
 _distanceX = 50;
-_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 {
-_muerto = _x;
-if ((getNumber (configfile >> "CfgWeapons" >> vest _muerto >> "ItemInfo" >> "HitpointsProtectionInfo" >> "Chest" >> "armor") > _numero) and (_unit distance _muerto < _distanceX)) then
+_victim = _x;
+if ((getNumber (configfile >> "CfgWeapons" >> vest _victim >> "ItemInfo" >> "HitpointsProtectionInfo" >> "Chest" >> "armor") > _numberX) and (_unit distance _victim < _distanceX)) then
 	{
-	_target = _muerto;
+	_target = _victim;
 	_hasBox = true;
-	_distanceX = _muerto distance _unit;
+	_distanceX = _victim distance _unit;
 	};
-} forEach _muertos;
+} forEach _victims;
 if ((_hasBox) and (_unit getVariable "rearming")) then
 	{
 	_unit stop false;
@@ -436,11 +436,11 @@ if ((_hasBox) and (_unit getVariable "rearming")) then
 		{_unit addItemToVest _x} forEach _itemsUnit;
 		_unit action ["rearm",_target];
 		//{_unit addItemCargoGlobal [_x,1]} forEach ((backpackItems _target) + (backpackMagazines _target));
-		_cosas = nearestObjects [_target, ["WeaponHolderSimulated", "GroundWeaponHolder", "WeaponHolder"], 5];
-		if (count _cosas > 0) then
+		_things = nearestObjects [_target, ["WeaponHolderSimulated", "GroundWeaponHolder", "WeaponHolder"], 5];
+		if (count _things > 0) then
 			{
-			_cosa = _cosas select 0;
-			{_cosa addItemCargoGlobal [_x,1]} forEach (vestItems _target);
+			_thingX = _things select 0;
+			{_thingX addItemCargoGlobal [_x,1]} forEach (vestItems _target);
 			};
 		removeVest _target;
 		};
@@ -449,19 +449,19 @@ if ((_hasBox) and (_unit getVariable "rearming")) then
 
 if (backpack _unit == "") then
 	{
-	_necesita = true;
+	_needsRearm = true;
 	_hasBox = false;
 	_distanceX = 50;
-	_muertos = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
+	_victims = allDead select {(_x distance _unit < 51) and (!(_x getVariable ["busy",false]))};
 	{
-	_muerto = _x;
-	if ((backpack _muerto != "") and (_unit distance _muerto < _distanceX)) then
+	_victim = _x;
+	if ((backpack _victim != "") and (_unit distance _victim < _distanceX)) then
 		{
-		_target = _muerto;
+		_target = _victim;
 		_hasBox = true;
-		_distanceX = _muerto distance _unit;
+		_distanceX = _victim distance _unit;
 		};
-	} forEach _muertos;
+	} forEach _victims;
 	if ((_hasBox) and (_unit getVariable "rearming")) then
 		{
 		_unit stop false;
@@ -475,11 +475,11 @@ if (backpack _unit == "") then
 			_unit addBackPackGlobal ((backpack _target) call BIS_fnc_basicBackpack);
 			_unit action ["rearm",_target];
 			//{_unit addItemCargoGlobal [_x,1]} forEach ((backpackItems _target) + (backpackMagazines _target));
-			_cosas = nearestObjects [_target, ["WeaponHolderSimulated", "GroundWeaponHolder", "WeaponHolder"], 5];
-			if (count _cosas > 0) then
+			_things = nearestObjects [_target, ["WeaponHolderSimulated", "GroundWeaponHolder", "WeaponHolder"], 5];
+			if (count _things > 0) then
 				{
-				_cosa = _cosas select 0;
-				{_cosa addItemCargoGlobal [_x,1]} forEach (backpackItems _target);
+				_thingX = _things select 0;
+				{_thingX addItemCargoGlobal [_x,1]} forEach (backpackItems _target);
 				};
 			removeBackpackGlobal _target;
 			};
@@ -487,5 +487,5 @@ if (backpack _unit == "") then
 		};
 	};
 _unit doFollow (leader _unit);
-if (!_necesita) then {if (_inPlayerGroup) then {_unit groupChat "No need to rearm"}} else {if (_inPlayerGroup) then {_unit groupChat "Rearming Done"}};
+if (!_needsRearm) then {if (_inPlayerGroup) then {_unit groupChat "No need to rearm"}} else {if (_inPlayerGroup) then {_unit groupChat "Rearming Done"}};
 _unit setVariable ["rearming",false];

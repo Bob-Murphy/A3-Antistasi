@@ -1,4 +1,4 @@
-private ["_unit","_muerto","_killer","_skill","_nombre","_tipo"];
+private ["_unit","_victim","_killer","_skill","_nameX","_typeX"];
 
 _unit = _this select 0;
 
@@ -6,14 +6,14 @@ _unit = _this select 0;
 _unit setVariable ["spawner",true,true];
 
 _unit allowFleeing 0;
-_tipo = typeOf _unit;
-//_skill = if (_tipo in sdkTier1) then {(skillFIA * 0.2)} else {if (_tipo in sdkTier2) then {0.1 + (skillFIA * 0.2)} else {0.1 + (skillFIA * 0.2)}};
+_typeX = typeOf _unit;
+//_skill = if (_typeX in sdkTier1) then {(skillFIA * 0.2)} else {if (_typeX in sdkTier2) then {0.1 + (skillFIA * 0.2)} else {0.1 + (skillFIA * 0.2)}};
 _skill = skillFIA * 0.05 * skillMult;
 if (!activeGREF) then {if (not((uniform _unit) in uniformsSDK)) then {[_unit] call A3A_fnc_reDress}};
 
 if ((!isMultiplayer) and (leader _unit == theBoss)) then {_skill = _skill + 0.1};
 _unit setSkill _skill;
-if (_tipo in SDKSniper) then
+if (_typeX in SDKSniper) then
 	{
 	if (count unlockedSN > 0) then
 		{
@@ -40,10 +40,10 @@ else
 		{
 		if (getNumber (configfile >> "CfgWeapons" >> headgear _unit >> "ItemInfo" >> "HitpointsProtectionInfo" >> "Head" >> "armor") < 2) then {removeHeadgear _unit;_unit addHeadgear (selectRandom helmets)};
 		};
-	if ((_tipo in SDKMil) or (_tipo == staticCrewTeamPlayer)) then
+	if ((_typeX in SDKMil) or (_typeX == staticCrewTeamPlayer)) then
 		{
 		[_unit,unlockedRifles] call A3A_fnc_randomRifle;
-		if ((loadAbs _unit < 340) and (_tipo in SDKMil)) then
+		if ((loadAbs _unit < 340) and (_typeX in SDKMil)) then
 			{
 			if ((random 20 < skillFIA) and (count unlockedAA > 0)) then
 				{
@@ -55,7 +55,7 @@ else
 		}
 	else
 		{
-		if (_tipo in SDKMG) then
+		if (_typeX in SDKMG) then
 			{
 			if (count unlockedMG > 0) then
 				{
@@ -68,7 +68,7 @@ else
 			}
 		else
 			{
-			if (_tipo in SDKGL) then
+			if (_typeX in SDKGL) then
 				{
 				if (count unlockedGL > 0) then
 					{
@@ -81,14 +81,14 @@ else
 				}
 			else
 				{
-				if (_tipo != SDKUnarmed) then {[_unit,unlockedRifles] call A3A_fnc_randomRifle};
-				if (_tipo in SDKExp) then
+				if (_typeX != SDKUnarmed) then {[_unit,unlockedRifles] call A3A_fnc_randomRifle};
+				if (_typeX in SDKExp) then
 					{
 					_unit setUnitTrait ["explosiveSpecialist",true];
 					}
 				else
 					{
-					if (_tipo in SDKMedic) then
+					if (_typeX in SDKMedic) then
 						{
 						_unit setUnitTrait ["medic",true];
 						if ({_x == "FirstAidKit"} count (items _unit) < 10) then
@@ -98,7 +98,7 @@ else
 						}
 					else
 						{
-						if (_tipo in SDKATman) then
+						if (_typeX in SDKATman) then
 							{
 							if !(unlockedAT isEqualTo []) then
 								{
@@ -121,7 +121,7 @@ else
 							}
 						else
 							{
-							if (_tipo in squadLeaders) then
+							if (_typeX in squadLeaders) then
 								{
 								_unit setskill ["courage",_skill + 0.2];
 								_unit setskill ["commanding",_skill + 0.2];
@@ -141,13 +141,13 @@ _unit selectWeapon (primaryWeapon _unit);
 
 if (!haveRadio) then
 	{
-	if ((_unit != leader _unit) and (_tipo != staticCrewTeamPlayer)) then {_unit unlinkItem "ItemRadio"};
+	if ((_unit != leader _unit) and (_typeX != staticCrewTeamPlayer)) then {_unit unlinkItem "ItemRadio"};
 	};
 
-if ({if (_x in humo) exitWith {1}} count unlockedMagazines > 0) then {_unit addMagazines [selectRandom humo,2]};
+if ({if (_x in smokeX) exitWith {1}} count unlockedMagazines > 0) then {_unit addMagazines [selectRandom smokeX,2]};
 if !(hasIFA) then
 	{
-	if ((sunOrMoon < 1) and (_tipo != SDKUnarmed)) then
+	if ((sunOrMoon < 1) and (_typeX != SDKUnarmed)) then
 		{
 		if (haveNV) then
 			{
@@ -198,7 +198,7 @@ if !(hasIFA) then
 		};
 	};
 /*
-if ((_tipo != "B_G_Soldier_M_F") and (_tipo != "B_G_Sharpshooter_F")) then {if (_aiming > 0.35) then {_aiming = 0.35}};
+if ((_typeX != "B_G_Soldier_M_F") and (_typeX != "B_G_Sharpshooter_F")) then {if (_aiming > 0.35) then {_aiming = 0.35}};
 
 _unit setskill ["aimingAccuracy",_aiming];
 _unit setskill ["spotDistance",_spotD];
@@ -213,13 +213,13 @@ if (player == leader _unit) then
 	{
 	_unit setVariable ["owner",player];
 	_EHkilledIdx = _unit addEventHandler ["killed", {
-		_muerto = _this select 0;
-		[_muerto] spawn A3A_fnc_postmortem;
+		_victim = _this select 0;
+		[_victim] spawn A3A_fnc_postmortem;
 		_killer = _this select 1;
-		if !(hasIFA) then {arrayids pushBackUnique (name _muerto)};
-		if (side _killer == malos) then
+		if !(hasIFA) then {arrayids pushBackUnique (name _victim)};
+		if (side _killer == Occupants) then
 			{
-			_nul = [0.25,0,getPos _muerto] remoteExec ["A3A_fnc_citySupportChange",2];
+			_nul = [0.25,0,getPos _victim] remoteExec ["A3A_fnc_citySupportChange",2];
 			[-0.25,0] remoteExec ["A3A_fnc_prestige",2];
 			}
 		else
@@ -236,7 +236,7 @@ if (player == leader _unit) then
 					};
 				};
 			};
-		_muerto setVariable ["spawner",nil,true];
+		_victim setVariable ["spawner",nil,true];
 		}];
 	if ((typeOf _unit != SDKUnarmed) and !hasIFA) then
 		{
@@ -261,8 +261,8 @@ if (player == leader _unit) then
 					[_unit] join stragglers;
 					if ((vehicle _unit isKindOf "StaticWeapon") or (isNull (driver (vehicle _unit)))) then {unassignVehicle _unit; [_unit] orderGetIn false};
 					_unit doMove position player;
-					_tiempo = time + 900;
-					waitUntil {sleep 1;(!alive _unit) or (_unit distance player < 500) or (time > _tiempo)};
+					_timeX = time + 900;
+					waitUntil {sleep 1;(!alive _unit) or (_unit distance player < 500) or (time > _timeX)};
 					if ((_unit distance player >= 500) and (alive _unit)) then {_unit setPos (getMarkerPos respawnTeamPlayer)};
 					[_unit] join group player;
 					};
@@ -273,9 +273,9 @@ if (player == leader _unit) then
 else
 	{
 	_EHkilledIdx = _unit addEventHandler ["killed", {
-		_muerto = _this select 0;
+		_victim = _this select 0;
 		_killer = _this select 1;
-		[_muerto] remoteExec ["A3A_fnc_postmortem",2];
+		[_victim] remoteExec ["A3A_fnc_postmortem",2];
 		if ((isPlayer _killer) and (side _killer == teamPlayer)) then
 			{
 			if (!isMultiPlayer) then
@@ -286,9 +286,9 @@ else
 			}
 		else
 			{
-			if (side _killer == malos) then
+			if (side _killer == Occupants) then
 				{
-				_nul = [0.25,0,getPos _muerto] remoteExec ["A3A_fnc_citySupportChange",2];
+				_nul = [0.25,0,getPos _victim] remoteExec ["A3A_fnc_citySupportChange",2];
 				[-0.25,0] remoteExec ["A3A_fnc_prestige",2];
 				}
 			else
@@ -306,7 +306,7 @@ else
 					};
 				};
 			};
-		_muerto setVariable ["spawner",nil,true];
+		_victim setVariable ["spawner",nil,true];
 		}];
 	};
 
