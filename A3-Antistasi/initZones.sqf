@@ -153,36 +153,25 @@ if ((_nameX != "") and (_nameX != "Lakatoro01") and (_nameX != "Galili01") and (
     _nroads = count _roads;
     _nearRoadsFinalSorted = [_roads, [], { _pos distance _x }, "ASCEND"] call BIS_fnc_sortBy;
     _pos = _nearRoadsFinalSorted select 0;
-    if (isNil "_pos") then {diag_log format ["[Antistasi] Failed to create town at %1 - Position given was Nil ",_nameX];
-	}
-	else
-		{
-		if (isNil {server getVariable _nameX}) then
-			{
-			_mrk = createmarker [format ["%1", _nameX], _pos];
-			_mrk setMarkerSize [_size, _size];
-			_mrk setMarkerShape "RECTANGLE";
-			_mrk setMarkerBrush "SOLID";
-			_mrk setMarkerColor colorOccupants;
-			_mrk setMarkerText _nameX;
-			_mrk setMarkerAlpha 0;
-			citiesX pushBack _nameX;
-			spawner setVariable [_nameX,2,true];
-			_dmrk = createMarker [format ["Dum%1",_nameX], _pos];
-			_dmrk setMarkerShape "ICON";
-			_dmrk setMarkerType "loc_Ruin";
-			_dmrk setMarkerColor colorOccupants;
-			if (_nroads < _numVeh) then {_numVeh = _nroads};
-			sidesX setVariable [_mrk,Occupants,true];
-			_info = [_numCiv, _numVeh, prestigeOPFOR,prestigeBLUFOR];
-			server setVariable [_nameX,_info,true];
-			}
-			else
-			{
-			diag_log format ["[Antistasi] Failed to create town at %1 - Town Already exists ",_nameX];
-			};
-		};
-	};
+    if (isNil "_pos") then {diag_log format ["Falla %1",_nameX]};
+    _mrk = createmarker [format ["%1", _nameX], _pos];
+    _mrk setMarkerSize [_size, _size];
+    _mrk setMarkerShape "RECTANGLE";
+    _mrk setMarkerBrush "SOLID";
+    _mrk setMarkerColor colorOccupants;
+    _mrk setMarkerText _nameX;
+    _mrk setMarkerAlpha 0;
+    citiesX pushBack _nameX;
+    spawner setVariable [_nameX,2,true];
+    _dmrk = createMarker [format ["Dum%1",_nameX], _pos];
+    _dmrk setMarkerShape "ICON";
+    _dmrk setMarkerType "loc_Ruin";
+    _dmrk setMarkerColor colorOccupants;
+    if (_nroads < _numVeh) then {_numVeh = _nroads};
+    sidesX setVariable [_mrk,Occupants,true];
+    _info = [_numCiv, _numVeh, prestigeOPFOR,prestigeBLUFOR];
+    server setVariable [_nameX,_info,true];
+    };
 }foreach (nearestLocations [getArray (configFile >> "CfgWorlds" >> worldName >> "centerPosition"), ["NameCityCapital","NameCity","NameVillage","CityCenter"], 25000]);
 
 markersX = markersX + citiesX;
