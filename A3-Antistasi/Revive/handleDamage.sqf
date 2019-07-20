@@ -127,7 +127,7 @@ else
 							moveOut _unit;
 							};
 						if (isPlayer _unit) then {
-								_unit allowDamage false
+								_unit allowDamage false;
 								if (isPlayer _injurer) then {
 								[format["%1 was incapacitated by %2 (Friendly Fire)", name _unit, name _injurer]] remoteExec ["systemChat", 0, false];
 								diag_log format ["[Antistasi] %1 was incapacitaed by %2 (Friendly Fire)", name _unit, name _injurer];
@@ -154,7 +154,7 @@ else
 							moveOut _unit;
 							};
 						if (isPlayer _unit) then {
-								_unit allowDamage false
+								_unit allowDamage false;
 								if (isPlayer _injurer) then {
 								[format["%1 was incapacitated by %2 (Friendly Fire)", name _unit, name _injurer]] remoteExec ["systemChat", 0, false];
 								diag_log format ["[Antistasi] %1 was incapacitaed by %2 (Friendly Fire)", name _unit, name _injurer];
