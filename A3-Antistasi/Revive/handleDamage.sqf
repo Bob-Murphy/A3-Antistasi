@@ -25,16 +25,7 @@ if (_part == "") then
 					moveOut _unit;
 					};
 				_dam = 0.9;
-				if (isPlayer _unit) then {
-						_unit allowDamage false;
-						if (isPlayer _injurer) then {
-						[format["%1 was incapacitated by %2 (Friendly Fire)", name _unit, name _injurer]] remoteExec ["systemChat", 0, false];
-						diag_log format ["[Antistasi] %1 was incapacitaed by %2 (Friendly Fire)", name _unit, name _injurer];
-						}
-						else
-						{
-						[format["%1 was incapacitated", name _unit]] remoteExec ["systemChat", 0, false];
-						};
+				if (isPlayer _unit) then {_unit allowDamage false};
 				if (!isNull _injurer) then {[_unit,side _injurer] spawn A3A_fnc_unconscious} else {[_unit,sideUnknown] spawn A3A_fnc_unconscious};
 				}
 			else
@@ -48,8 +39,6 @@ if (_part == "") then
 						[_unit] spawn A3A_fnc_respawn;
 						if (isPlayer _injurer) then
 							{
-							[format["%1 was Team Killed by %2", name _unit, name _injurer]] remoteExec ["systemChat", 0, false];
-							diag_log format ["[Antistasi] %1 was Team Killed / Executed by %2", name _unit, name _injurer];
 							if (tkPunish) then
 								{
 								if ((_injurer != _unit) and (side _injurer == teamPlayer) and (_unit getVariable ["teamPlayer",false]) and (side group _unit == teamPlayer)) then
@@ -126,17 +115,7 @@ else
 							//_unit action ["getOut", vehicle _unit];
 							moveOut _unit;
 							};
-						if (isPlayer _unit) then {
-								_unit allowDamage false
-								if (isPlayer _injurer) then {
-								[format["%1 was incapacitated by %2 (Friendly Fire)", name _unit, name _injurer]] remoteExec ["systemChat", 0, false];
-								diag_log format ["[Antistasi] %1 was incapacitaed by %2 (Friendly Fire)", name _unit, name _injurer];
-								}
-								else
-								{
-								[format["%1 was incapacitated", name _unit]] remoteExec ["systemChat", 0, false];
-								};
-						};
+						if (isPlayer _unit) then {_unit allowDamage false};
 						if (!isNull _injurer) then {[_unit,side _injurer] spawn A3A_fnc_unconscious} else {[_unit,sideUnknown] spawn A3A_fnc_unconscious};
 						};
 					};
@@ -153,17 +132,7 @@ else
 							{
 							moveOut _unit;
 							};
-						if (isPlayer _unit) then {
-								_unit allowDamage false
-								if (isPlayer _injurer) then {
-								[format["%1 was incapacitated by %2 (Friendly Fire)", name _unit, name _injurer]] remoteExec ["systemChat", 0, false];
-								diag_log format ["[Antistasi] %1 was incapacitaed by %2 (Friendly Fire)", name _unit, name _injurer];
-								}
-								else
-								{
-								[format["%1 was incapacitated", name _unit]] remoteExec ["systemChat", 0, false];
-								};
-						};
+						if (isPlayer _unit) then {_unit allowDamage false};
 						if (!isNull _injurer) then {[_unit,side _injurer] spawn A3A_fnc_unconscious} else {[_unit,sideUnknown] spawn A3A_fnc_unconscious};
 						};
 					};
