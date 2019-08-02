@@ -164,7 +164,7 @@ while {true} do
 	_bigWar = false;
 	if ((tierWar<=3)and{not(["REP"] call BIS_fnc_taskExists)}) then
 	{_smallWar = true};
-	if ((tierWar>3)and{(count(["REP"] call BIS_fnc_taskExists)>1)}) then
+	if ((tierWar>3)and{(count(["REP"] call BIS_fnc_taskExists)<2)}) then
 	{_bigWar = true};
 	_xchance = (tierWar*20);
 	_xroll = round(random 100);
