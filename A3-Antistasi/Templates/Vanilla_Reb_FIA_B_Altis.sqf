@@ -85,19 +85,23 @@ supportStaticsSDKB3 = "B_Mortar_01_support_F";
 ////////////////////////////////////
 //             ITEMS             ///
 ////////////////////////////////////
-//Player spawn loadout
-teamPlayerDefaultLoadout = [[],[],[],["U_BG_Guerilla2_1", []],[],[],"","",[],["ItemMap","","","","",""]];
 //Mines
 ATMineMag = "ATMine_Range_Mag";
 APERSMineMag = "APERSMine_Range_Mag";
+
+//Breaching explosives
+//Breaching APCs needs one demo charge
+breachingExplosivesAPC = [["DemoCharge_Remote_Mag", 1]];
+//Breaching tanks needs one satchel charge or two demo charges
+breachingExplosivesTank = [["SatchelCharge_Remote_Mag", 1], ["DemoCharge_Remote_Mag", 2]];
+
 //Starting Unlocks
-unlockedWeapons append ["hgun_Pistol_heavy_02_F","hgun_ACPC2_F","hgun_PDW2000_F","SMG_03_TR_black","Binocular"];
-unlockedRifles append ["SMG_01_F","hgun_PDW2000_F"];
-unlockedMagazines append ["6Rnd_45ACP_Cylinder","9Rnd_45_Mag","30Rnd_9x21_Mag","50Rnd_570x28_SMG_03","MiniGrenade","IEDLandBig_Remote_Mag","IEDUrbanBig_Remote_Mag","IEDLandSmall_Remote_Mag","IEDUrbanSmall_Remote_Mag"];
-initialRifles append ["SMG_01_F","hgun_PDW2000_F"];
-initGrenades = ["MiniGrenade","SmokeShell"];//Frag, Smoke
-unlockedBackpacks append ["B_FieldPack_oli","B_FieldPack_blk","B_FieldPack_ocamo","B_FieldPack_oucamo","B_FieldPack_cbr","B_FieldPack_khk"];
-initVest = ["V_Chestrig_blk","V_Chestrig_rgr","V_Chestrig_khk","V_Chestrig_oli","V_BandollierB_blk","V_BandollierB_cbr","V_BandollierB_rgr","V_BandollierB_khk","V_BandollierB_oli","V_Rangemaster_belt"];
+initialRebelEquipment append ["hgun_Pistol_heavy_02_F","hgun_ACPC2_F","hgun_PDW2000_F","SMG_01_F"];
+initialRebelEquipment append ["SMG_01_F","hgun_PDW2000_F"];
+initialRebelEquipment append ["6Rnd_45ACP_Cylinder","9Rnd_45_Mag","30Rnd_9x21_Mag","30Rnd_9x21_Mag_SMG_02","MiniGrenade","SmokeShell","IEDLandBig_Remote_Mag","IEDUrbanBig_Remote_Mag","IEDLandSmall_Remote_Mag","IEDUrbanSmall_Remote_Mag"];
+initialRebelEquipment append ["B_FieldPack_oli","B_FieldPack_blk","B_FieldPack_ocamo","B_FieldPack_oucamo","B_FieldPack_cbr","B_FieldPack_khk"];
+initialRebelEquipment append ["V_Chestrig_blk","V_Chestrig_rgr","V_Chestrig_khk","V_Chestrig_oli","V_BandollierB_blk","V_BandollierB_cbr","V_BandollierB_rgr","V_BandollierB_khk","V_BandollierB_oli","V_Rangemaster_belt"];
+initialRebelEquipment append ["Binocular","acc_flashlight"];
 //TFAR Unlocks
-if (hasTFAR) then {unlockedItems append ["tf_microdagr","tf_rf7800str"]};
-if (startLR) then {unlockedBackpacks pushBack "tf_rt1523g"};
+if (hasTFAR) then {initialRebelEquipment append ["tf_microdagr","tf_rf7800str"]};
+if (startLR) then {initialRebelEquipment pushBack "tf_rt1523g"};

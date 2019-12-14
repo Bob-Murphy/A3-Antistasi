@@ -1,7 +1,8 @@
 //Original Author: Barbolani
 //Edited and updated by the Antistasi Community Development Team
-
-diag_log format ["%1: [Antistasi] | INFO | InitGarrisons Started.", servertime];
+scriptName "fn_initGarrisons";
+private _fileName = "fn_initGarrisons";
+[2,"InitGarrisons started",_fileName] call A3A_fnc_log;
 
 _fnc_initMarker =
 {
@@ -51,7 +52,7 @@ _fnc_initMarker =
 		_mrk setMarkerType _mrkType;
 		_mrk setMarkerText _mrkText;
 
-		[_x] spawn A3A_fnc_createControls;
+		[_x] call A3A_fnc_createControls;
 	} forEach _target;
 };
 
@@ -64,12 +65,6 @@ _fnc_initGarrison =
 	    _marker = _x;
 			_garrNum = ([_marker] call A3A_fnc_garrisonSize) / 8;
 			_side = sidesX getVariable [_marker, sideUnknown];
-			while {_side == sideUnknown} do
-			{
-				diag_log format ["Side unknown for %1, sleeping 1!", _marker];
-				sleep 1;
-				_side = sidesX getVariable [_marker, sideUnknown];
-			};
 			if(_side != Occupants) then
 			{
 				_groupsRandom = [groupsCSATSquad, groupsFIASquad] select ((_marker in outposts) && (gameMode == 4));
@@ -95,6 +90,7 @@ _fnc_initGarrison =
 
 			//Old system, keeping it runing for now
 			garrison setVariable [_marker, _garrisonOld, true];
+
 	} forEach _markerArray;
 };
 
@@ -150,51 +146,51 @@ else
 {sidesX setVariable [_x, Occupants, true]} forEach _controlsNATO;
 {sidesX setVariable [_x, Invaders, true]} forEach _controlsCSAT;
 
+[_mrkCSAT, airportsX, flagCSATmrk, "%1 Airbase", true] call _fnc_initMarker;
+[_mrkCSAT, resourcesX, "loc_rock", "Resources"] call _fnc_initMarker;
+[_mrkCSAT, factories, "u_installation", "Factory"] call _fnc_initMarker;
+[_mrkCSAT, outposts, "loc_bunker", "%1 Outpost", true] call _fnc_initMarker;
+[_mrkCSAT, seaports, "b_naval", "Sea Port"] call _fnc_initMarker;
+
+if (!(isNil "loadLastSave") && {loadLastSave}) exitWith {};
+
+
 if (debug) then {
 	diag_log format ["%1: [Antistasi] | DEBUG | initGarrisons.sqf | Setting up Airbase stuff.", servertime];
 };
 
-[_mrkCSAT, airportsX, flagCSATmrk, "%1 Airbase", true] spawn _fnc_initMarker;
-[airportsX, "Airport"] spawn _fnc_initGarrison;								//Old system
-[airportsX, "Airport", [0,0,0]] spawn A3A_fnc_createGarrison;	//New system
-
+[airportsX, "Airport"] call _fnc_initGarrison;								//Old system
+[airportsX, "Airport", [0,0,0]] call A3A_fnc_createGarrison;	//New system
 
 if (debug) then {
 	diag_log format ["%1: [Antistasi] | DEBUG | initGarrisons.sqf | Setting up Resource stuff.", servertime];
 };
 
-[_mrkCSAT, resourcesX, "loc_rock", "Resources"] spawn _fnc_initMarker;
-[resourcesX, "Resource"] spawn _fnc_initGarrison;							//Old system
-[resourcesX, "Other", [0,0,0]] spawn A3A_fnc_createGarrison;	//New system
+[resourcesX, "Resource"] call _fnc_initGarrison;							//Old system
+[resourcesX, "Other", [0,0,0]] call A3A_fnc_createGarrison;	//New system
 
 if (debug) then {
 	diag_log format ["%1: [Antistasi] | DEBUG | initGarrisons.sqf | Setting up Factory stuff.", servertime];
 };
 
-[_mrkCSAT, factories, "u_installation", "Factory"] spawn _fnc_initMarker;
-[factories, "Factory"] spawn _fnc_initGarrison;
-[factories, "Other", [0,0,0]] spawn A3A_fnc_createGarrison;
+[factories, "Factory"] call _fnc_initGarrison;
+[factories, "Other", [0,0,0]] call A3A_fnc_createGarrison;
 
 if (debug) then {
 	diag_log format ["%1: [Antistasi] | DEBUG | initGarrisons.sqf | Setting up Outpost stuff.", servertime];
 };
 
-[_mrkCSAT, outposts, "loc_bunker", "%1 Outpost", true] spawn _fnc_initMarker;
-[outposts, "Outpost"] spawn _fnc_initGarrison;
-[outposts, "Outpost", [1,1,0]] spawn A3A_fnc_createGarrison;
+[outposts, "Outpost"] call _fnc_initGarrison;
+[outposts, "Outpost", [1,1,0]] call A3A_fnc_createGarrison;
 
 if (debug) then {
 	diag_log format ["%1: [Antistasi] | DEBUG | initGarrisons.sqf | Setting up Seaport stuff.", servertime];
 };
 
-[_mrkCSAT, seaports, "b_naval", "Sea Port"] spawn _fnc_initMarker;
-[seaports, "Seaport"] spawn _fnc_initGarrison;
-[seaports, "Other", [1,0,0]] spawn A3A_fnc_createGarrison;
+[seaports, "Seaport"] call _fnc_initGarrison;
+[seaports, "Other", [1,0,0]] call A3A_fnc_createGarrison;
 
 //New system, adding cities
-[citiesX, "City", [0,0,0]] spawn A3A_fnc_createGarrison;
+[citiesX, "City", [0,0,0]] call A3A_fnc_createGarrison;
 
-sidesX setVariable ["NATO_carrier", Occupants, true];
-sidesX setVariable ["CSAT_carrier", Invaders, true];
-
-diag_log format ["%1: [Antistasi] | INFO | InitGarrison Completed.", servertime];
+[2,"InitGarrisons completed",_fileName] call A3A_fnc_log;

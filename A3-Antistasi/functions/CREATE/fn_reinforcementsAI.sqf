@@ -60,7 +60,7 @@ _reinfPlaces = [];
 						//This line send a virtual convoy, execute [] execVM "Convoy\convoyDebug.sqf" as admin to see it
 						//If it breaks, it doesn't change anything
 						//If it works, it will not add any troups
-						[_siteX, "Reinforce", _sideX, [(_numberX == 4)]] remoteExec ["A3A_fnc_createAIAction", 2];
+						//[_siteX, "Reinforce", _sideX, [(_numberX == 4)]] remoteExec ["A3A_fnc_createAIAction", 2];
 					}
 					else
 					{
@@ -84,7 +84,7 @@ if ((count _reinfPlaces == 0) and (AAFpatrols <= 3)) then {[] spawn A3A_fnc_AAFr
 
 {
     //Setting the number of recruitable units per ticks per outpost
-		garrison setVariable [format ["%1_recruit", _x], 8, true];
+		garrison setVariable [format ["%1_recruit", _x], 0, true];
 } forEach outposts;
 
 //New reinf system (still reactive, so a bit shitty)

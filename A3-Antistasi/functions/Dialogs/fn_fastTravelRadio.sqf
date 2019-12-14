@@ -3,7 +3,7 @@ private ["_roads","_pos","_positionX","_groupX"];
 _markersX = markersX + [respawnTeamPlayer];
 
 _esHC = false;
-
+if !((vehicle player getVariable "SA_Tow_Ropes") isEqualTo objNull) exitWith {hint "You cannot Fast Travel with your Tow Rope out or a Vehicle attached"};
 if (count hcSelected player > 1) exitWith {hint "You can select one group only to Fast Travel"};
 if (count hcSelected player == 1) then {_groupX = hcSelected player select 0; _esHC = true} else {_groupX = group player};
 _checkForPlayer = false;
@@ -77,7 +77,7 @@ if (count _positionTel > 0) then
 			{
 			_vehicles = [];
 			{if (vehicle _x != _x) then {_vehicles pushBackUnique (vehicle _x)}} forEach units _groupX;
-			{if ((vehicle _x) in _vehicles) exitWith {_checkForPlayer = true}} forEach playableUnits;
+			{if ((vehicle _x) in _vehicles) exitWith {_checkForPlayer = true}} forEach (call A3A_fnc_playableUnits);
 			};
 		if (_checkForPlayer and ((_base != "SYND_HQ") and !(_base in airportsX))) exitWith {hint format ["%1 Fast Travel has been cancelled because some player has boarded their vehicle and the destination is not HQ or an Airbase",groupID _groupX]};
 		{

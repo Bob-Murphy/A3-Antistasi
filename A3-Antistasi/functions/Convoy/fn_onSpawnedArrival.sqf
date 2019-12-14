@@ -1,13 +1,14 @@
 params ["_convoyID", "_unitObjects", "_convoyPos", "_target", "_markerArray", "_convoyType", "_convoySide"];
 
+server setVariable [format ["Con%1", _convoyID], nil, true];
 switch (_convoyType) do
 {
   case ("reinforce"):
   {
     {
       _vehicle = _x select 0;
-      _vehGroup = _vehicle getVariable "vehGroup";
-      _cargoGroup = _vehicle getVariable "cargoGroup";
+      _vehicleGroup = _vehicle getVariable "vehGroup";
+      _cargoGroup = _vehicle getVariable ["cargoGroup", grpNull];
       if(_vehicle isKindOf "Air") then
       {
         if (_vehicle isKindOf "Helicopter") then
@@ -49,7 +50,7 @@ switch (_convoyType) do
         //Create marker for the cargo
         if(_cargoGroup != grpNull) then
         {
-          _wp0 = _vehGroup addWaypoint [_target, count (wayPoints _vehGroup)];
+          _wp0 = _vehicleGroup addWaypoint [_target, count (wayPoints _vehicleGroup)];
           _wp0 setWaypointType "TR UNLOAD";
           _wp0 setWaypointStatements ["true","[group this] spawn A3A_fnc_groupDespawner;"];
           _wp3 = _cargoGroup addWaypoint [_target, 0];
@@ -59,7 +60,7 @@ switch (_convoyType) do
         }
         else
         {
-          _wp0 = _vehGroup addWaypoint [_target, count (wayPoints _vehGroup)];
+          _wp0 = _vehicleGroup addWaypoint [_target, count (wayPoints _vehicleGroup)];
         	_wp0 setWaypointType "GETOUT";
         	_wp0 setWaypointStatements ["true","[group this] spawn A3A_fnc_groupDespawner; (group this) spawn A3A_fnc_attackDrillAI;"];
         };

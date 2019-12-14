@@ -39,16 +39,23 @@ for "_i" from 1 to _max do
 	//_pos = _positionX findEmptyPosition [_size - 200,_size+50,_typeVehX];
 	_spawnParameter = [_markerX, "Vehicle"] call A3A_fnc_findSpawnPosition;
 
-	_vehicle=[_spawnParameter select 0, _spawnParameter select 1,_typeVehX, _sideX] call bis_fnc_spawnvehicle;
-	_veh = _vehicle select 0;
-	_vehCrew = _vehicle select 1;
-	{[_x,_markerX] call A3A_fnc_NATOinit} forEach _vehCrew;
-	[_veh] call A3A_fnc_AIVEHinit;
-	_groupVeh = _vehicle select 2;
-	_soldiers = _soldiers + _vehCrew;
-	_groups pushBack _groupVeh;
-	_vehiclesX pushBack _veh;
-	sleep 1;
+	if (_spawnParameter isEqualType []) then
+	{
+		_vehicle=[_spawnParameter select 0, _spawnParameter select 1,_typeVehX, _sideX] call bis_fnc_spawnvehicle;
+		_veh = _vehicle select 0;
+		_vehCrew = _vehicle select 1;
+		{[_x,_markerX] call A3A_fnc_NATOinit} forEach _vehCrew;
+		[_veh] call A3A_fnc_AIVEHinit;
+		_groupVeh = _vehicle select 2;
+		_soldiers = _soldiers + _vehCrew;
+		_groups pushBack _groupVeh;
+		_vehiclesX pushBack _veh;
+		sleep 1;
+	}
+	else
+	{
+		_i = _max;
+	};
 };
 
 if (_frontierX) then
@@ -261,11 +268,24 @@ if (!_busy) then
 		private _veh = objNull;
 		if(_spawnParameter isEqualType []) then
 		{
-			_typeVehX = if (_sideX == Occupants) then {selectRandom ([vehNATOPlane, vehNATOPlaneAA] select {[_x] call A3A_fnc_vehAvailable})} else {selectRandom ([vehCSATPlane, vehCSATPlaneAA] select {[_x] call A3A_fnc_vehAvailable})};
-			_veh = createVehicle [_typeVehX, (_spawnParameter select 0), [],3, "CAN_COLLIDE"];
-			_veh setDir (_spawnParameter select 1);
-			_vehiclesX pushBack _veh;
-			_nul = [_veh] call A3A_fnc_AIVEHinit;
+			private _vehPool = [];
+			if (_sideX == Occupants) then
+			{
+				_vehPool = ([vehNATOPlane, vehNATOPlaneAA] select {[_x] call A3A_fnc_vehAvailable})
+			}
+			else
+			{
+				_vehPool = ([vehCSATPlane, vehCSATPlaneAA] select {[_x] call A3A_fnc_vehAvailable})
+			};
+			if(count _vehPool > 0) then
+			{
+				_typeVehX = selectRandom _vehPool;
+				_veh = createVehicle [_typeVehX, (_spawnParameter select 0), [], 0, "CAN_COLLIDE"];
+				_veh setDir (_spawnParameter select 1);
+				_veh setPos (_spawnParameter select 0);
+				_vehiclesX pushBack _veh;
+				_nul = [_veh] call A3A_fnc_AIVEHinit;
+			};
 			_spawnParameter = [_markerX, "Plane"] call A3A_fnc_findSpawnPosition;
 		}
 		else
@@ -330,7 +350,7 @@ if (!_busy) then
 _arrayVehAAF = if (_sideX == Occupants) then {vehNATONormal} else {vehCSATNormal};
 _countX = 0;
 
-while {_countX < _nVeh} do
+while {_countX < _nVeh && {_countX < 3}} do
 {
 	_typeVehX = selectRandom _arrayVehAAF;
 	_spawnParameter = [_markerX, "Vehicle"] call A3A_fnc_findSpawnPosition;
