@@ -1,7 +1,7 @@
 //Snow only on chernarus winter map
 if(toLower worldName != "chernarus_winter") exitWith {};
 
-while {true} do
+while {false} do
 {
     private _waitTime = (random 30) * 60; //30 minutes of wait time max
     private _snowTime = (random 15) * 60; //15 minutes of snow max
