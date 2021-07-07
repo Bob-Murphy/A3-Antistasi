@@ -100,7 +100,7 @@
 		_types set [IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL,[]];\
 		_types set [IDC_RSCDISPLAYARSENAL_TAB_CARGOTHROW,[/*"Grenade","SmokeShell"*/]];\
 		_types set [IDC_RSCDISPLAYARSENAL_TAB_CARGOPUT,[/*"Mine","MineBounding","MineDirectional"*/]];\
-		_types set [IDC_RSCDISPLAYARSENAL_TAB_CARGOMISC,["FirstAidKit","Medikit","MineDetector","Toolkit"]];
+		_types set [IDC_RSCDISPLAYARSENAL_TAB_CARGOMISC,["FirstAidKit","Medikit","MineDetector","ToolKit"]];
 
 #define STATS_WEAPONS\
 	["reloadtime","dispersion","maxzeroing","hit","mass","initSpeed"],\
@@ -123,18 +123,20 @@ _arrayContains = {
 	(param[0]) findIf { toLower(_x) == _item } != -1
 };
 
-private _ammoCountToMags = {
-	params ["_item", "_count"];
-	private _magSize = getNumber (configfile >> "CfgMagazines" >> _item >> "count");
-	//Return
-	_amount / _magSize;
+// Calculate the minimum number of an item needed before non-members can take it
+private _minItemsMember = {
+	params ["_index", "_item"];					// Arsenal tab index, item classname
+	private _min = jna_minItemMember select _index;
+	if (_index == IDC_RSCDISPLAYARSENAL_TAB_CARGOMAG || _index == IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL) then {
+		_min = _min * getNumber (configfile >> "CfgMagazines" >> _item >> "count");
+	};
+	_min;
 };
 
 _mode = [_this,0,"Open",[displaynull,""]] call bis_fnc_param;
 _this = [_this,1,[]] call bis_fnc_param;
 //if!(_mode in ["draw3D","ListCurSel"])then{diag_log ("jna call "+_mode);};
 //commented by Barbolani to avoid rpt flood
-
 
 switch _mode do {
 
@@ -143,7 +145,7 @@ switch _mode do {
 		private ["_data"];
 
 		INITTYPES
-		
+
 		_data = [[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]];
 
 		_configArray = (
@@ -263,7 +265,6 @@ switch _mode do {
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	case "CustomInit":{
-
 		_display = _this select 0;
 		["ReplaceBaseItems",[_display]] call jn_fnc_arsenal;
 		["customEvents",[_display]] call jn_fnc_arsenal;
@@ -274,11 +275,11 @@ switch _mode do {
 		["jn_fnc_arsenal"] call BIS_fnc_endLoadingScreen;
 	};
 	///////////////////////////////////////////////////////////////////////////////////////////
-	
+
 	case "SaveTFAR": {
 		jna_backpackRadioSettings = nil;
 		jna_swRadioSettings = nil;
-		if (hasTFAR) then {
+		if (A3A_hasTFAR) then {
 			private _backpackRadio = player call TFAR_fnc_backpackLr;
 			if (!isNil "_backpackRadio" && {count _backpackRadio >= 2}) then {
 				jna_backpackRadioSettings = _backpackRadio call TFAR_fnc_getLrSettings;
@@ -289,12 +290,12 @@ switch _mode do {
 			};
 		};
 	};
-	
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//Restore TFAR radio settings
 
 	case "RestoreTFAR": {
-		if (hasTFAR) then {
+		if (A3A_hasTFAR) then {
 			private _backpackRadio = player call TFAR_fnc_backpackLr;
 			if (!isNil "_backpackRadio" && {count _backpackRadio >= 2}) then {
 				if (isNil "jna_backpackRadioSettings" || {typeName jna_backpackRadioSettings != typeName []}) exitWith {
@@ -308,12 +309,11 @@ switch _mode do {
 			//Arsenal gives players base TFAR radio items. TFAR will, at some point, replace this with an 'instanced' version.
 			//This can cause freq to reset. To fix, check if we have a radio first, and wait around if we do, but TFAR isn't showing it.
 			//Spawn so we can sleep without bothering the arsenal.
-			private _hasRadio =	{_x isKindOf ["ItemRadio", configFile >> "CfgWeapons"];} count (assignedItems player) > 0;
+			private _hasRadio =	player call A3A_fnc_getRadio != "";
 			if (_hasRadio) then {
 				[] spawn {
-					private _checkHasRadio = {{_x isKindOf ["ItemRadio", configFile >> "CfgWeapons"];} count (assignedItems player) > 0};
 					//Wait around until TFAR has done its work. Frequent checks - we shouldn't have to wait more than a handful of seconds for TFAR;
-					waitUntil {sleep 1; call _checkHasRadio && call TFAR_fnc_haveSWRadio};
+					waitUntil {sleep 1; player call A3A_fnc_getRadio != "" && call TFAR_fnc_haveSWRadio};
 					private _swRadio = if (call TFAR_fnc_haveSWRadio) then { call TFAR_fnc_activeSwRadio } else { nil };
 					//Doesn't hurt to be careful!
 					if (!isNil "_swRadio") then {
@@ -426,20 +426,20 @@ switch _mode do {
 			_ctrlSort = _display displayctrl (IDC_RSCDISPLAYARSENAL_SORT + _idc);
 			_ctrlSort ctrlRemoveAllEventHandlers "lbselchanged";
 			_ctrlSort ctrladdeventhandler ["lbselchanged",format ["['SortBy',[_this,%1]] call jn_fnc_arsenal;",_idc]];
-      
+
       //Delete "Sort by mod" as it doesn't work currently.
       if (lbSize _ctrlSort > 1) then {
         _ctrlSort lbDelete 1;
       };
-      
-      
+
+
 			private _sortByAmountIndex =  _ctrlSort lbadd "Sort by amount";
       private _sortDefaultIndex = _ctrlSort lbadd "Default";
-      
+
       _ctrlSort lbSetValue [0, SORT_ALPHABETICAL];
       _ctrlSort lbSetValue [_sortByAmountIndex, SORT_AMOUNT];
       _ctrlSort lbSetValue [_sortDefaultIndex, SORT_DEFAULT];
-  
+
       lbSortByValue _ctrlSort;
 
 			_ctrlSort lbsetcursel _sort;
@@ -448,106 +448,88 @@ switch _mode do {
 		} foreach IDCS;
 		uinamespace setvariable ["jn_fnc_arsenal_sort",_sortValues];
 	};
-  
+
   case "SortBy":{
     _this params ["_eventParams", "_currentTabIdc"];
     _eventParams params ["_ctrlSort", "_selectedIndex"];
-    
+
     private _display = ctrlParent _ctrlSort;
     private _ctrlList = _display displayctrl (IDC_RSCDISPLAYARSENAL_LIST + _currentTabIdc);
     private _type = (ctrltype _ctrlList == 102);
-    
+
     private _itemCount = lbSize _ctrlList;
-    
+
     //diag_log format ["Name: %1, Value: %2, Data: %3", _ctrlSort lbText _selectedIndex, _ctrlSort lbValue _selectedIndex, _ctrlSort lbData _selectedIndex];
     //diag_log format ["Number of items: %1", _itemCount];
-    
+
     //for "_i" from 0 to (_itemCount - 1) do {
     //  diag_log format ["Item: %1 has value %2", _ctrlList lbText _i, _ctrlList lbValue _i];
-    //}; 
-    
+    //};
+
     private _sortType = _ctrlSort lbValue _selectedIndex;
-    
+
     switch (_sortType) do {
       case SORT_ALPHABETICAL: {
         private _displayNameArray = [];
         private _dataArray = [];
-        
+
         //Iterate in reverse order to avoid a lot of array resizes in _dataArray;
         for "_i" from (_itemCount - 1) to 0 step -1 do {
           private _dataStr = if _type then{_ctrlList lnbdata [_i,0]}else{_ctrlList lbdata _i};
-          
+
           if (_dataStr != "") then {
             private _data = call compile _dataStr;
             private _item = _data select 0;
             private _amount = _data select 1;
             private _displayName = _data select 2;
-            
+
             _displayNameArray pushBack _displayName;
             _dataArray set [_i, _data];
           };
         };
-        
+
         _displayNameArray sort true;
-      
+
         for "_i" from 0 to (_itemCount - 1) do {
           private _data = _dataArray select _i;
           if (!isNil "_data") then {
             private _displayName = _data select 2;
             _ctrlList lbSetValue [_i, _displayNameArray find _displayName];
-          };  
+          };
         };
-        
+
         lbSortByValue _ctrlList;
       };
       case SORT_AMOUNT: {
         for "_i" from 0 to (_itemCount - 1) do {
            private _dataStr = if _type then {_ctrlList lnbdata [_i,0]} else {_ctrlList lbdata _i};
-          
+
           if (_dataStr != "") then {
             private _data = call compile _dataStr;
             private _item = _data select 0;
             private _amount = _data select 1;
             private _displayName = _data select 2;
-            
+
             //If it's the description string, then make sure it's first.
             if (_item == "") then {
               _amount = -100;
             };
-            
+
             _ctrlList lbSetValue [_i, _amount];
           };
-          
+
           lbSortByValue _ctrlList;
         };
       };
-      case SORT_DEFAULT: { 
-        lbSort _ctrlList; 
+      case SORT_DEFAULT: {
+        lbSort _ctrlList;
       };
   };
-  
+
   };
 
 	///////////////////////////////////////////////////////////////////////////////////////////
 	case "ReplaceBaseItems":{
-		//replace magazines with partial filled, just like it was before entering the box, entering the arsanal refilles all ammo
-		_mags = missionNamespace getVariable "jna_magazines_init";//get ammo list from before arsenal started
-
-		{
-			if!(isnil "_x")then{
-				_container = switch _foreachindex do{
-					case 0: {uniformContainer player;};
-					case 1: {vestContainer player;};
-					case 2: {backpackContainer player;};
-				};
-				clearMagazineCargo _container;
-				{
-					_item = _x select 0;
-					_amount = _x select 1;
-					_container addMagazineAmmoCargo [_item,1,_amount];
-				}forEach _x;
-			};
-		} forEach _mags;
 
 		//replace all items to base type
 		_loadout = getUnitLoadout player;//this crap doesnt save weapon attachments in containers
@@ -563,14 +545,10 @@ switch _mode do {
 			_primaryweapon set [0,((_primaryweapon select 0) call BIS_fnc_baseWeapon)];
 			_secondaryweapon set [0,((_secondaryweapon select 0) call BIS_fnc_baseWeapon)];
 			_handgunweapon set [0,((_handgunweapon select 0) call BIS_fnc_baseWeapon)];
-			
+
 			//Some mod backpacks have no empty variant
 			if (count _backpack > 0) then {
-				private _basicBackpack = ((_backpack select 0) call BIS_fnc_basicBackpack);
-				if (_basicBackpack isEqualTo "") then {
-					_basicBackpack = _backpack select 0;
-				};	
-				_backpack set [0,_basicBackpack];	
+				_backpack set [0,((_backpack select 0) call A3A_fnc_basicBackpack)];
 			};
 
 			_uniformitems = [_unifrom,1,[]] call BIS_fnc_param;
@@ -595,9 +573,28 @@ switch _mode do {
 		{
 			_container = _x;
 			{
-				_container addItemCargo [_x,1];
+				_container addItemCargoGlobal [_x,1];
 			} forEach ((missionNamespace getVariable "jna_containerCargo_init") select _foreachindex);
 		} forEach [uniformContainer player,vestContainer player,backpackContainer player];
+
+		//replace magazines with partial filled, just like it was before entering the box, entering the arsanal refilles all ammo
+		// Do this after setUnitLoadout, because that fills magazines when you have >1 with the same bullet count (BIS bug)
+		_mags = missionNamespace getVariable "jna_magazines_init";//get ammo list from before arsenal started
+		{
+			if!(isnil "_x")then{
+				_container = switch _foreachindex do{
+					case 0: {uniformContainer player;};
+					case 1: {vestContainer player;};
+					case 2: {backpackContainer player;};
+				};
+				clearMagazineCargoGlobal _container;
+				{
+					_item = _x select 0;
+					_amount = _x select 1;
+					_container addMagazineAmmoCargo [_item,1,_amount];
+				}forEach _x;
+			};
+		} forEach _mags;
 	};
 
 
@@ -1151,7 +1148,8 @@ switch _mode do {
 		params ["_index","_item","_amount",["_updateDataList",false]];
 
 		//update datalist
-		if(_updateDataList)then{
+		if(_updateDataList)then
+		{
 			jna_dataList set [_index, [jna_dataList select _index, [_item, _amount]] call jn_fnc_arsenal_addToArray];
 		};
 
@@ -1404,8 +1402,9 @@ switch _mode do {
 		};
 
 		//grayout items for non members, right items are done in selectRight
-		_min = jna_minItemMember select _index;
+		// Except in the vehicle arsenal, where this function is used for the right items too
 		_grayout = false;
+		_min = [_index, _item] call _minItemsMember;
 		if ((_amount <= _min) AND (_amount != -1) AND !([player] call A3A_fnc_isMember)) then{_grayout = true};
 
 		_color = [1,1,1,1];
@@ -1585,8 +1584,17 @@ switch _mode do {
 		private _ctrlListSecondaryWeapon = _display displayctrl (IDC_RSCDISPLAYARSENAL_LIST + IDC_RSCDISPLAYARSENAL_TAB_SECONDARYWEAPON);
 		private _ctrlListHandgun = _display displayctrl (IDC_RSCDISPLAYARSENAL_LIST + IDC_RSCDISPLAYARSENAL_TAB_HANDGUN);
 
+		// Prevent equipping item when there aren't any left
+		if (_amount == 0 and _item != "") exitWith{
+			if(missionnamespace getvariable ["jna_reselect_item",true])then{//prefent loop when unavalable item was worn and a other unavalable item was selected
+				missionnamespace setvariable ["jna_reselect_item",false];
+				["ListSelectCurrent",[_display,_index]] call jn_fnc_arsenal;
+				missionnamespace setvariable ["jna_reselect_item",true];
+			};
+		};
+
 		//check if weapon is unlocked
-		private _min = jna_minItemMember select _index;
+		private _min = [_index, _item] call _minItemsMember;
 		if ((_amount <= _min) AND (_amount != -1) AND (_item !="") AND !([player] call A3A_fnc_isMember) AND !_type) exitWith{
 			['showMessage',[_display,"We are low on this item, only members may use it"]] call jn_fnc_arsenal;
 
@@ -1654,8 +1662,8 @@ switch _mode do {
 								clearAllItemsFromBackpack player;
 							};
 						};
-						
-						
+
+
 
 						//container changed
 						_container = switch _index do{
@@ -1741,7 +1749,7 @@ switch _mode do {
 			case IDC_RSCDISPLAYARSENAL_TAB_NVGS:{
 				_oldItem = hmd player;
 				if (_oldItem != _item) then {
-					player removeweapon _oldItem;
+					player removeWeaponGlobal _oldItem;
 					[_index, _oldItem] call jn_fnc_arsenal_addItem;
 					if (_item != "") then{
 						player addweapon _item;
@@ -1752,7 +1760,7 @@ switch _mode do {
 			case IDC_RSCDISPLAYARSENAL_TAB_BINOCULARS: {
 				_oldItem = binocular player;
 				if (_oldItem != _item) then {
-					player removeweapon _oldItem;
+					player removeWeaponGlobal _oldItem;
 					[_index,_oldItem] call jn_fnc_arsenal_addItem;
 					if (_item != "") then{
 						player addweapon _item;
@@ -1796,11 +1804,11 @@ switch _mode do {
 					//remove magazines
 					_oldMagazines = magazinesAmmoFull player;//["30Rnd_65x39_caseless_mag",30,false,-1,"Uniform"]
 					_loadout = getUnitLoadout player;
-					{player removeMagazine _x} forEach magazines player;
+					{player removeMagazineGlobal _x} forEach magazines player;
 
 
 					//remove weapon
-					player removeweapon _oldItem;
+					player removeWeaponGlobal _oldItem;
 					[_index, _oldItem] call jn_fnc_arsenal_addItem;
 
 					//add new weapon
@@ -1808,6 +1816,12 @@ switch _mode do {
 						//give player new weapon
 						[player,_item,0] call bis_fnc_addweapon;
 						[_index, _item]call jn_fnc_arsenal_removeItem;
+
+						//Remove any attachments that spawn *with* the weapon.
+						switch _index do {
+							case IDC_RSCDISPLAYARSENAL_TAB_PRIMARYWEAPON: {removeAllPrimaryWeaponItems player};
+							case IDC_RSCDISPLAYARSENAL_TAB_HANDGUN: {removeAllHandgunItems player};
+						};
 
 						//try adding back attachments
 						{
@@ -1842,7 +1856,7 @@ switch _mode do {
 						}else{
 							if([_oldCompatableMagazines, _magazine] call _arrayContains)then{
 								if!([_newCompatableMagazines, _magazine] call _arrayContains)then{
-									player removemagazine _magazine;
+									player removeMagazineGlobal _magazine;
 								};
 							};
 						};
@@ -2040,7 +2054,6 @@ switch _mode do {
 
 
 		//-- Disable too heavy items
-		_min = jna_minItemMember select _index;
 		_rows = lnbsize _ctrlList select 0;
 		_columns = lnbsize _ctrlList select 1;
 		_colorWarning = ["IGUI","WARNING_RGB"] call bis_fnc_displayColorGet;
@@ -2051,11 +2064,8 @@ switch _mode do {
 			_item = _data select 0;
 			_amount = _data select 1;
 			_grayout = false;
-	
-			if (_index == IDC_RSCDISPLAYARSENAL_TAB_CARGOMAG || _index ==	IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL && _amount > 0) then {
-				_amount = [_item, _amount] call _ammoCountToMags;
-			};
 
+			_min = [_index, _item] call _minItemsMember;
 			if ((_amount <= _min) AND (_amount != -1) AND (_amount !=0) AND !([player] call A3A_fnc_isMember)) then{_grayout = true};
 
 			_isIncompatible = _ctrlList lnbvalue [_r,1];
@@ -2092,12 +2102,6 @@ switch _mode do {
 		_data = call compile _dataStr;
 		_item = _data select 0;
 		_amount = _data select 1;
-		//Number of magazines if item is ammo, or _amount otherwise
-		_numberOfMags = _amount;
-
-		if(_index in [IDC_RSCDISPLAYARSENAL_TAB_CARGOMAG,IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL] && _amount > 0) then {
-				_numberOfMags = [_item, _amount] call _ammoCountToMags;
-		};
 
 		_load = 0;
 		_items = [];
@@ -2118,9 +2122,8 @@ switch _mode do {
 		if(((_amount > 0 || _amount == -1) || _add < 0) && (_add != 0))then{
 
 			if (_add > 0) then {//add
-				_min = jna_minItemMember select _index;
-
-				if((_numberOfMags <= _min) AND (_amount != -1) AND !([player] call A3A_fnc_isMember)) exitWith{
+				_min = [_index, _item] call _minItemsMember;
+				if((_amount <= _min) AND (_amount != -1) AND !([player] call A3A_fnc_isMember)) exitWith{
 					['showMessage',[_display,"We are low on this item, only members may use it"]] call jn_fnc_arsenal;
 				};
 				if(_index in [IDC_RSCDISPLAYARSENAL_TAB_CARGOMAG,IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL])then{//magazines are handeld by bullet count
@@ -2156,7 +2159,8 @@ switch _mode do {
 
 					//save mags in list and remove them
 					_mags = magazinesAmmoCargo _container;
-					clearMagazineCargo _container;
+					if (_mags findIf {(_x select 0) isEqualTo _item} == -1) exitWith {};
+					clearMagazineCargoGlobal _container;
 
 					//add back magazines exept the one that needs to be removed
 					_removed = false;
@@ -2212,16 +2216,8 @@ switch _mode do {
 	case "buttonInvToJNA": {
 		//_display = _this select 0;
 		private _object = missionnamespace getVariable ["jna_object",objNull];
-		private _array = _object call jn_fnc_arsenal_cargoToArray;
-
-		//clear cargo
-		clearMagazineCargoGlobal _object;
-		clearItemCargoGlobal _object;
-		clearweaponCargoGlobal _object;
-		clearbackpackCargoGlobal _object;
-
 		//update server
-		[_object,_array] remoteExec ["jn_fnc_arsenal_cargoToArsenal",2];
+		[_object] remoteExec ["jn_fnc_arsenal_cargoToArsenal",2];
 	};
 
 	///////////////////////////////////////////////////////////////////////////////////////////
@@ -2559,11 +2555,11 @@ switch _mode do {
 
 			//--- Save
 			case (_key == DIK_S): {
-				if (_ctrl) then {['buttonSave',[_display]] call jn_fnc_arsenal;};
+				if (_ctrl && (vehicle player isEqualTo player)) then {['buttonSave',[_display]] call jn_fnc_arsenal;};
 			};
 			//--- Open
 			case (_key == DIK_O): {
-				if (_ctrl) then {['buttonLoad',[_display]] call jn_fnc_arsenal;};
+				if (_ctrl && (vehicle player isEqualTo player)) then {['buttonLoad',[_display]] call jn_fnc_arsenal;};
 			};
 
 			//--- Vision mode
@@ -2599,7 +2595,7 @@ switch _mode do {
 	/////////////////////////////////////////////////////////////////////////////////////////// event
 	case "buttonClose": {
 		_display = _this select 0;
-		
+
 		["RestoreTFAR"] call jn_fnc_arsenal;
 
 		//remove missing item message
@@ -2616,33 +2612,24 @@ switch _mode do {
 		/////////////////////////////////////////////////////////////////////////////////
 		// unifrom
 		_itemsUnifrom = [];
-		if(hasACEMedical)then{
-
-			//ACE Basic medical system
-			if (ace_medical_level == 1) then{
-				_itemsUnifrom pushBack ["ACE_fieldDressing",4];
-				_itemsUnifrom pushBack ["ACE_morphine",2];
-				_itemsUnifrom pushBack ["ACE_epinephrine",1];
-			};
-
-			//ACE Advanced medical system
-			if (ace_medical_level == 2) then{
-				_itemsUnifrom pushBack ["ACE_elasticBandage",2];
-				_itemsUnifrom pushBack ["ACE_packingBandage",2];
-				_itemsUnifrom pushBack ["ACE_morphine",1];
-				_itemsUnifrom pushBack ["ACE_epinephrine",1];
-				_itemsUnifrom pushBack ["ACE_tourniquet",1];
-			};
+		if(A3A_hasACEMedical)then{
+			_itemsUnifrom pushBack ["ACE_elasticBandage",2];
+			_itemsUnifrom pushBack ["ACE_packingBandage",2];
+			_itemsUnifrom pushBack ["ACE_morphine",1];
+			_itemsUnifrom pushBack ["ACE_epinephrine",1];
+			_itemsUnifrom pushBack ["ACE_adenosine", 1];
+			_itemsUnifrom pushBack ["ACE_tourniquet",1];
+			_itemsUnifrom pushBack ["ACE_splint", 1];
 		}else{
 			_itemsUnifrom pushBack ["FirstAidKit",2];
-			if(hasACE) then {
+			if(A3A_hasACE) then {
 				_itemsUnifrom pushBack ["ACE_EarPlugs",1];
 				_itemsUnifrom pushBack ["ACE_MapTools",1];
 				_itemsUnifrom pushBack ["ACE_CableTie",2];
 			};
 		};
 
-		if ((hasACE) AND (sunOrMoon <1)) then {
+		if ((A3A_hasACE) AND (sunOrMoon <1)) then {
 			_itemsUnifrom pushback ["ACE_HandFlare_Red",1];
 			_itemsUnifrom pushback ["ACE_Chemlight_HiRed",1];
 			_itemsUnifrom pushBack ["ACE_Flashlight_MX991",1];
@@ -2674,43 +2661,36 @@ switch _mode do {
 
 		if([player] call A3A_fnc_isMedic)then{
 
-			if(hasACEMedical) then { //Medic equipment
-
-				if (ace_medical_level == 1) then{ //ACE Basic medical system for medic
-					_itemsBackpack pushBack ["ACE_fieldDressing",20];
-					_itemsBackpack pushBack ["ACE_morphine",10];
-					_itemsBackpack pushBack ["ACE_epinephrine",10];
-					_itemsBackpack pushBack ["ACE_bloodIV",6];
-				};
-				if (ace_medical_level == 2) then{ //ACE Advanced medical system for medic
-					_itemsBackpack pushBack ["ACE_elasticBandage",15];
-					_itemsBackpack pushBack ["ACE_packingBandage",7];
-					_itemsBackpack pushBack ["ACE_tourniquet",5];
-					_itemsBackpack pushBack ["ACE_personalAidKit",1];
-				};
-			} else { //Vanilla Medikit for medic
+			if(A3A_hasACEMedical) then { //Medic equipment
+				_itemsBackpack pushBack ["ACE_elasticBandage",15];
+				_itemsBackpack pushBack ["ACE_packingBandage",15];
+				_itemsBackpack pushBack ["ACE_tourniquet",5];
+				_itemsBackpack pushBack ["ACE_personalAidKit",1];
+				_itemsBackpack pushBack ["ACE_adenosine", 10];
+				_itemsBackpack pushBack ["ACE_morphine", 10];
+				_itemsBackpack pushBack ["ACE_epinephrine", 10];
+		} else { //Vanilla Medikit for medic
 				_itemsBackpack pushBack ["Medikit",1];
 				_itemsBackpack pushBack ["FirstAidKit",1];
 			};
 		} else {
-		 		if(hasACEMedical) then {
-					if (ace_medical_level == 1) then{ //ACE Basic medical system for soldiers
-						_itemsBackpack pushBack ["ACE_fieldDressing",10];
-						_itemsBackpack pushBack ["ACE_morphine",3];
-						_itemsBackpack pushBack ["ACE_epinephrine",2];
-					};
-					if (ace_medical_level == 2) then{ //ACE Advanced medical system for soldiers
-						_itemsBackpack pushBack ["ACE_elasticBandage",10];
-						_itemsBackpack pushBack ["ACE_tourniquet",2];
-					};
+		 		if(A3A_hasACEMedical) then {
+					_itemsBackpack pushBack ["ACE_fieldDressing",5];
+					_itemsBackpack pushBack ["ACE_packingBandage",5];
+					_itemsBackpack pushBack ["ACE_elasticBandage",5];
+					_itemsBackpack pushBack ["ACE_morphine",3];
+					_itemsBackpack pushBack ["ACE_epinephrine",2];
+					_itemsBackpack pushBack ["ACE_adenosine", 2];
+					_itemsBackpack pushBack ["ACE_tourniquet",2];
+					_itemsBackpack pushBack ["ACE_splint", 2];
 			} else { //Vanilla FAK for soldiers
 				_itemsBackpack pushBack ["FirstAidKit",5];
 			};
 		};
 
 		if(player getUnitTrait "Engineer")then {
-					_itemsBackpack pushback ["Toolkit",1];
-					if(hasACE) then {
+					_itemsBackpack pushback ["ToolKit",1];
+					if(A3A_hasACE) then {
 						_itemsbackpack pushback ["ACE_Clacker",1];
 						_itemsbackpack pushback ["ACE_SpraypaintRed",4];
 					};

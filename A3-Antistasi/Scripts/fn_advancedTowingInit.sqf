@@ -9,7 +9,8 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-
+#include "..\Includes\common.inc"
+FIX_LINE_NUMBERS()
 #define SA_Find_Surface_ASL_Under_Position(_object,_positionAGL,_returnSurfaceASL,_canFloat) \
 _objectASL = AGLToASL (_object modelToWorldVisual (getCenterOfMass _object)); \
 _surfaceIntersectStartASL = [_positionAGL select 0, _positionAGL select 1, (_objectASL select 2) + 1]; \
@@ -53,9 +54,11 @@ SA_Advanced_Towing_Install = {
 
 // Prevent advanced towing from installing twice
 if(!isNil "SA_TOW_INIT") exitWith {};
+scriptName "fn_advancedTowingInit.sqf";
+private _fileName = "fn_advancedTowingInit.sqf";
 SA_TOW_INIT = true;
 
-diag_log "Advanced Towing Loading...";
+Info("Loading advanced towing");
 
 SA_Simulate_Towing_Speed = {
 
@@ -245,7 +248,7 @@ SA_Simulate_Towing = {
 			_lastMovedCargoPosition = _cargoPosition;
 
 			_massAdjustedMaxSpeed = _vehicle getVariable ["SA_Max_Tow_Speed",_maxVehicleSpeed];
-			if(speed _vehicle > (_massAdjustedMaxSpeed)+0.1) then {
+			if(speed _vehicle^2 > (_massAdjustedMaxSpeed+0.1)^2) then { //square to ensure positive number
 				_vehicle setVelocity ((vectorNormalized (velocity _vehicle)) vectorMultiply (_massAdjustedMaxSpeed/3.6));
 			};
 
@@ -375,6 +378,11 @@ SA_Attach_Tow_Ropes = {
 					[[_helper],"SA_Hide_Object_Global"] call SA_RemoteExecServer;
 					[_helper, [0,0,0], [0,0,-1]] ropeAttachTo (_towRopes select 0);
 					[_vehicle,_vehicleHitch,_cargo,_cargoHitch,_ropeLength] spawn SA_Simulate_Towing;
+
+					// capture empty vehicles when attached
+					if (count crew _cargo == 0) then {
+						[_cargo, side group _player, true] remoteExec ["A3A_fnc_vehKilledOrCaptured", 2];
+					};
 				};
 			};
 		} else {
@@ -410,6 +418,7 @@ SA_Pickup_Tow_Ropes = {
 			{
 				_attachedObj ropeDetach _x;
 			} forEach (_vehicle getVariable ["SA_Tow_Ropes",[]]);
+			detach _attachedObj;
 			deleteVehicle _attachedObj;
 		} forEach ropeAttachedObjects _vehicle;
 		_helper = "Land_Can_V2_F" createVehicle position _player;
@@ -692,11 +701,11 @@ SA_Is_Supported_Cargo = {
 	params ["_vehicle","_cargo"];
 	private ["_canTow"];
 	_canTow = false;
-	if(not isNull _vehicle && not isNull _cargo) then {
+	if (not isNull _vehicle && not isNull _cargo) then {
 		{
-			if(_vehicle isKindOf (_x select 0)) then {
-				if(_cargo isKindOf (_x select 2)) then {
-					if( (toUpper (_x select 1)) == "CAN_TOW" ) then {
+			if (_vehicle isKindOf (_x select 0)) then {
+				if (_cargo isKindOf (_x select 2)) then {
+					if ( (toUpper (_x select 1)) == "CAN_TOW" ) then {
 						_canTow = true;
 					} else {
 						_canTow = false;
@@ -710,20 +719,20 @@ SA_Is_Supported_Cargo = {
 
 SA_Hint = {
     params ["_msg",["_isSuccess",true]];
-    if(!isNil "ExileClient_gui_notification_event_addNotification") then {
-		if(_isSuccess) then {
+    if (!isNil "ExileClient_gui_notification_event_addNotification") then {
+		if (_isSuccess) then {
 			["Success", [_msg]] call ExileClient_gui_notification_event_addNotification;
 		} else {
 			["Whoops", [_msg]] call ExileClient_gui_notification_event_addNotification;
 		};
     } else {
-        hint _msg;
+		["Advanced Towing", _msg] call A3A_fnc_customHint;
     };
 };
 
 SA_Hide_Object_Global = {
 	params ["_obj"];
-	if( _obj isKindOf "Land_Can_V2_F" ) then {
+	if ( _obj isKindOf "Land_Can_V2_F" ) then {
 		hideObjectGlobal _obj;
 	};
 };
@@ -755,30 +764,28 @@ SA_Add_Player_Tow_Actions = {
 		[] call SA_Pickup_Tow_Ropes_Action;
 	}, nil, 0, false, true, "", "call SA_Pickup_Tow_Ropes_Action_Check"];
 
-	if (isMultiplayer) then
-		{
-		player addEventHandler ["Respawn",
-		{
-		player setVariable ["SA_Tow_Actions_Loaded",false];
+	if (isMultiplayer) then {
+		player addEventHandler ["Respawn",{
+			player setVariable ["SA_Tow_Actions_Loaded",false];
 		}];
-		};
+	};
 };
 
 SA_Find_Nearby_Tow_Vehicles = {
 	private ["_nearVehicles","_nearVehiclesWithTowRopes","_vehicle","_ends","_end1","_end2"];
 	_nearVehicles = [];
 	{
-		_nearVehicles append  (position player nearObjects [_x, 30]);
+		_nearVehicles append (position player nearObjects [_x, 30]);
 	} forEach (missionNamespace getVariable ["SA_TOW_SUPPORTED_VEHICLES_OVERRIDE",SA_TOW_SUPPORTED_VEHICLES]);
 	_nearVehiclesWithTowRopes = [];
 	{
 		_vehicle = _x;
 		{
 			_ends = ropeEndPosition _x;
-			if(count _ends == 2) then {
+			if (count _ends == 2) then {
 				_end1 = _ends select 0;
 				_end2 = _ends select 1;
-				if(((position player) distance _end1) < 5 || ((position player) distance _end2) < 5 ) then {
+				if (((position player) distance _end1) < 5 || ((position player) distance _end2) < 5 ) then {
 					_nearVehiclesWithTowRopes pushBack _vehicle;
 				}
 			};
@@ -787,11 +794,11 @@ SA_Find_Nearby_Tow_Vehicles = {
 	_nearVehiclesWithTowRopes;
 };
 
-if(hasInterface) then {
+if (hasInterface) then {
 	[] spawn {
 		while {true} do {
-			if(!isNull player && isPlayer player) then {
-				if!( player getVariable ["SA_Tow_Actions_Loaded",false] ) then {
+			if (!isNull player && isPlayer player) then {
+				if !(player getVariable ["SA_Tow_Actions_Loaded",false]) then {
 					[] call SA_Add_Player_Tow_Actions;
 					player setVariable ["SA_Tow_Actions_Loaded",true];
 				};
@@ -804,10 +811,10 @@ if(hasInterface) then {
 
 SA_RemoteExec = {
 	params ["_params","_functionName","_target",["_isCall",false]];
-	if(!isNil "ExileClient_system_network_send") then {
+	if (!isNil "ExileClient_system_network_send") then {
 		["AdvancedTowingRemoteExecClient",[_params,_functionName,_target,_isCall]] call ExileClient_system_network_send;
 	} else {
-		if(_isCall) then {
+		if (_isCall) then {
 			_params remoteExecCall [_functionName, _target];
 		} else {
 			_params remoteExec [_functionName, _target];
@@ -817,10 +824,10 @@ SA_RemoteExec = {
 
 SA_RemoteExecServer = {
 	params ["_params","_functionName",["_isCall",false]];
-	if(!isNil "ExileClient_system_network_send") then {
+	if (!isNil "ExileClient_system_network_send") then {
 		["AdvancedTowingRemoteExecServer",[_params,_functionName,_isCall]] call ExileClient_system_network_send;
 	} else {
-		if(_isCall) then {
+		if (_isCall) then {
 			_params remoteExecCall [_functionName, 2];
 		} else {
 			_params remoteExec [_functionName, 2];
@@ -828,7 +835,7 @@ SA_RemoteExecServer = {
 	};
 };
 
-if(isServer) then {
+if (isServer) then {
 
 	// Adds support for exile network calls (Only used when running exile) //
 
@@ -837,8 +844,8 @@ if(isServer) then {
 	ExileServer_AdvancedTowing_network_AdvancedTowingRemoteExecServer = {
 		params ["_sessionId", "_messageParameters",["_isCall",false]];
 		_messageParameters params ["_params","_functionName"];
-		if(_functionName in SA_SUPPORTED_REMOTEEXECSERVER_FUNCTIONS) then {
-			if(_isCall) then {
+		if (_functionName in SA_SUPPORTED_REMOTEEXECSERVER_FUNCTIONS) then {
+			if (_isCall) then {
 				_params call (missionNamespace getVariable [_functionName,{}]);
 			} else {
 				_params spawn (missionNamespace getVariable [_functionName,{}]);
@@ -851,8 +858,8 @@ if(isServer) then {
 	ExileServer_AdvancedTowing_network_AdvancedTowingRemoteExecClient = {
 		params ["_sessionId", "_messageParameters"];
 		_messageParameters params ["_params","_functionName","_target",["_isCall",false]];
-		if(_functionName in SA_SUPPORTED_REMOTEEXECCLIENT_FUNCTIONS) then {
-			if(_isCall) then {
+		if (_functionName in SA_SUPPORTED_REMOTEEXECCLIENT_FUNCTIONS) then {
+			if (_isCall) then {
 				_params remoteExecCall [_functionName, _target];
 			} else {
 				_params remoteExec [_functionName, _target];
@@ -867,10 +874,10 @@ if(isServer) then {
 
 };
 
-diag_log "Advanced Towing Loaded";
+Info("Loaded advanced towing");
 
 };
 
-if(isServer) then {
+if (isServer) then {
 	[] call SA_Advanced_Towing_Install;
 };

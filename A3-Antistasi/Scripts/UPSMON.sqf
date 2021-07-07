@@ -66,9 +66,9 @@ _grp setvariable ["UPSMON_Origin",[_currpos,_behaviour,_speed,_formation,_member
 
 // == get the name of area marker ==============================================
 _areamarker = _this select 1;
-if (typename _areamarker != "STRING" || isNil ("_areamarker")) exitWith
+if (!(_areamarker isEqualType "STRING") || isNil ("_areamarker")) exitWith
 {
-	hint "UPSMON: Area marker not defined.\n(Typo, or name not enclosed in quotation marks?)";
+	hint "UPSMON: Area marker not defined.<br/>(Typo, or name not enclosed in quotation marks?)";
 };
 
 [_grp,_areamarker,_Ucthis] spawn UPSMON_SetMarkerArea;

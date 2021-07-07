@@ -86,9 +86,9 @@ params ["_item"];
 _return = -1;
 
 private ["_weaponType","_weaponTypeCategory"];
-/* 
-  We're gonna use ACE's item detection code, but modified. 
-  Thanks ACE! 
+/*
+  We're gonna use ACE's item detection code, but modified.
+  Thanks ACE!
 	(https://github.com/acemod/ACE3, this code was authored by Alganthe and Dedmen)
 */
 
@@ -122,7 +122,7 @@ private _itemCategory = switch true do {
 			case (_itemInfoType == TYPE_VEST): { "Vest" };
 			case (_simulationType == "NVGoggles"): { "NVGoggles" };
 			//Binos after NVGs to avoid accidentally catching them;
-			case (_simulationType == "Binocular" ||	_itemInfoType == TYPE_BINOCULAR_AND_NVG): { "Binocular" };
+			case (_simulationType == "Binocular" ||	{_simulationType == "Weapon" && _itemType == TYPE_BINOCULAR_AND_NVG}): { "Binocular" };
 			case (_simulationType == "ItemMap"): { "Map" };
 			case (_simulationType == "ItemCompass"): { "Compass" };
 			case (_simulationType == "ItemRadio"): { "Radio" };
@@ -130,13 +130,13 @@ private _itemCategory = switch true do {
 			case (_simulationType == "ItemGPS"): { "GPS" };
 			case (_itemInfoType == TYPE_UAV_TERMINAL): { "UAVTerminal" };
 			//Weapon, at the bottom to avoid adding binoculars
-			case (isClass (_weaponConfig >> "WeaponSlotsInfo") && _itemType != TYPE_BINOCULAR_AND_NVG): { 
+			case (isClass (_weaponConfig >> "WeaponSlotsInfo") && _itemType != TYPE_BINOCULAR_AND_NVG): {
 				(_item call BIS_fnc_itemType) select 1;
 			};
 			//Community Base Addon Misc Items
 			case (_itemInfoType in [TYPE_MUZZLE, TYPE_OPTICS, TYPE_FLASHLIGHT, TYPE_BIPOD] && _item isKindOf ["CBA_MiscItem", (_configCfgWeapons)]);
 			//Base game misc items
-			case (_itemType in [TYPE_FIRST_AID_KIT, TYPE_MEDIKIT, TYPE_TOOLKIT] ||	_simulationType == "ItemMineDetector"): {
+			case (_itemInfoType in [TYPE_FIRST_AID_KIT, TYPE_MEDIKIT, TYPE_TOOLKIT] ||	_simulationType == "ItemMineDetector"): {
 				"MiscItem";
 			};
 			default {
@@ -150,35 +150,39 @@ private _itemCategory = switch true do {
 		// Lists to check against
 		private _grenadeList = [];
 		{
-			_grenadeList append getArray (_configCfgWeapons >> "Throw" >> _item >> "magazines");
+			_grenadeList append getArray (_configCfgWeapons >> "Throw" >> _x >> "magazines");
 			false
 		} count getArray (_configCfgWeapons >> "Throw" >> "muzzles");
 
 		private _putList = [];
 		{
-			_putList append getArray (_configCfgWeapons >> "Put" >> _item >> "magazines");
+			_putList append getArray (_configCfgWeapons >> "Put" >> _x >> "magazines");
 			false
 		} count getArray (_configCfgWeapons >> "Put" >> "muzzles");
 		
 		// Check what the magazine actually is
 		switch true do {
 			// Rifle, handgun, secondary weapons mags
-			case (
-			       (getNumber (configFile >> "CfgMagazines" >> _item >> "type") in [TYPE_MAGAZINE_PRIMARY_AND_THROW,TYPE_MAGAZINE_SECONDARY_AND_PUT,1536,TYPE_MAGAZINE_HANDGUN_AND_GL]) &&
-			       {!(_item in _grenadeList)} &&
-			       {!(_item in _putList)}
-			     ): {
-						"Magazine";
-				};
-				// Grenades
-				case (_item in _grenadeList): {
-						"Throwable";
-				};
-				// Put
-				case (_item in _putList): {
-						"Placeable";
-				};
-		};	
+//			case (
+//			       (getNumber (configFile >> "CfgMagazines" >> _item >> "type") in [TYPE_MAGAZINE_PRIMARY_AND_THROW,TYPE_MAGAZINE_SECONDARY_AND_PUT,1536,TYPE_MAGAZINE_HANDGUN_AND_GL]) &&
+//			       {!(_item in _grenadeList)} &&
+//			       {!(_item in _putList)}
+//			     ): {
+//						"Magazine";
+//				};
+			// Grenades
+			case (_item in _grenadeList): {
+				"Throwable";
+			};
+			// Put
+			case (_item in _putList): {
+				"Placeable";
+			};
+			// Everything else
+			default {
+				"Magazine";
+			};
+		};
 	};
 
 	case (isClass (configFile >> "CfgVehicles" >> _item)): {

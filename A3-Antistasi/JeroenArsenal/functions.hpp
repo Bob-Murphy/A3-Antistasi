@@ -7,6 +7,7 @@ class JN {
 		class arsenal_addToArray {};
 		class arsenal_cargoToArray {};
 		class arsenal_cargoToArsenal {};
+		class arsenal_handleAction {};
 		class arsenal_init {};
 		class arsenal_inList {};
 		class arsenal_itemCount {};
@@ -19,6 +20,11 @@ class JN {
 		class vehicleArsenal {};
 
 	};
+	class JND {
+		file = "JeroenArsenal\JND";
+		class debugv2 {postinit = 1;};
+	};
+
 	class JNG {
 		file = "JeroenArsenal\JNG";
 		class garage {};
@@ -58,7 +64,9 @@ class JN {
 
 	class JNL_Functions {
 		file = "JeroenArsenal\JNL\Functions";
+		class logistics_addOrRemoveObjectMass {};
 		class logistics_canLoad {};
+		class logistics_classHasCargo {};
 		class logistics_getCargo {};
 		class logistics_getCargoOffsetAndDir {};
 		class logistics_getCargoType {};

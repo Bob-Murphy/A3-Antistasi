@@ -68,7 +68,7 @@ _saveName = _this;
 _saveData = profilenamespace getvariable ["bis_fnc_saveInventory_data",[]];
 _inventory = [];
 {
-	if(typename _x  == "STRING" && {_x == _saveName})exitWith{
+	if(_x isEqualType "STRING" && {_x == _saveName})exitWith{
 		_inventory = _saveData select (_foreachindex + 1);
 	};
 } forEach _saveData;
@@ -93,14 +93,14 @@ _inventory = [];
 }foreach magazinesAmmoFull player;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// assinged items
-_assignedItems_old = assignedItems player + [headgear player] + [goggles player] + [hmd player] + [binocular player];
+_assignedItems_old = assignedItems player + [headgear player] + [goggles player];
 {
 	_item = _x;
 	_amount = 1;
 	_index = _item call jn_fnc_arsenal_itemType;
 
 	if (_item call _isItemBino) then {
-		player removeWeapon _item;
+		player removeWeaponGlobal _item;
 	} else {
 		player unlinkItem _item;
 	};
@@ -123,7 +123,7 @@ _weapons = [primaryWeapon player, secondaryWeapon player, handgunWeapon player];
 	_item = _x;
 	_amount = 1;
 	_index = _foreachindex;
-	player removeWeapon _item;
+	player removeWeaponGlobal _item;
 	[_arrayPlaced,_index,_item,_amount]call _addToArray;
 } forEach _weapons;
 
@@ -154,16 +154,23 @@ removebackpack player;
 _isMember = [player] call A3A_fnc_isMember;
 _availableItems = [jna_dataList, _arrayPlaced] call _addArrays;
 _itemCounts =+ _availableItems;
+// reduce available items by guest limits for non-members
 {
 	_index = _foreachindex;
 	_subArray = _x;
+	_isMagArray = (_index == IDC_RSCDISPLAYARSENAL_TAB_CARGOMAG) || (_index == IDC_RSCDISPLAYARSENAL_TAB_CARGOMAGALL);
 	{
 		_item = _x select 0;
 		_amount = (_x select 1);
-		if (_amount != -1) then {
-			_amount = [(_x select 1) - (jna_minItemMember select _index),(_x select 1)] select _isMember;
+		if (_amount != -1 && !_isMember) then {
+			if !(_isMagArray) then { _amount = _amount - minWeaps }
+			else {
+				// Magazines are counted in bullets
+				_ammoCount = getNumber (configfile >> "CfgMagazines" >> _item >> "count");
+				_amount = _amount - memberOnlyMagLimit * _ammoCount;
+			};
+			_subArray set [_foreachindex, [_item,_amount]];
 		};
-		_subArray set [_foreachindex, [_item,_amount]];
 	} forEach _subArray;
 	_availableItems set [_index, _subArray];
 } forEach _availableItems;
@@ -238,7 +245,7 @@ _weapons = [_inventory select 6,_inventory select 7,_inventory select 8];
 			if (_amountMagAvailable > 0) then {
 				if (_amountMagAvailable < _amountMag) then {
 					_arrayMissing = [_arrayMissing,[_itemMag,_amountMag]] call jn_fnc_arsenal_addToArray;
-					_amountMag = _amountMagAvailable;
+					_amountMag = _amountMagAvailable max 0;
 				};
 			[_arrayTaken,_indexMag,_itemMag,_amountMag] call _addToArray;
 			[_availableItems,_indexMag,_itemMag,_amountMag] call _removeFromArray;
@@ -283,7 +290,7 @@ _weapons = [_inventory select 6,_inventory select 7,_inventory select 8];
 						};
 					};
 
-					if ((_indexAcc != -1) AND {[_availableItems select _indexAcc, _itemAcc] call jn_fnc_arsenal_itemCount != 0}) then {
+					if ((_indexAcc != -1) AND {[_availableItems select _indexAcc, _itemAcc] call jn_fnc_arsenal_itemCount > 0}) then {
 						switch _index do{
 							case IDC_RSCDISPLAYARSENAL_TAB_PRIMARYWEAPON:{player addPrimaryWeaponItem _itemAcc;};
 							case IDC_RSCDISPLAYARSENAL_TAB_SECONDARYWEAPON:{player addSecondaryWeaponItem _itemAcc;};
@@ -312,7 +319,7 @@ _backpackItems = _inventory select 2 select 1;
 
 //add containers
 _containers = [_uniform,_vest,_backpack];
-private _removeContainerFuncs = [{removeUniform player;},{removeVest player;},{removeBackpackGlobal player;}];										
+private _removeContainerFuncs = [{removeUniform player;},{removeVest player;},{removeBackpackGlobal player;}];
 private _addContainerFuncs = [
                               {player forceAddUniform (_this select 0);},
                               {player addVest (_this select 0);},
@@ -353,10 +360,21 @@ private _addContainerFuncs = [
 	};
 } forEach _containers;
 
+// because addItemCargo doesn't enable grenades
+_addItemToContainer = {
+	params ["_containerIndex", "_item"];
+	switch (_containerIndex) do {
+		case 0: { player addItemToUniform _item };
+		case 1: { player addItemToVest _item };
+		default { player addItemToBackpack _item };
+	};
+};
+
 //add items to containers
 {
 	_container = call (_x select 0);
 	_items = _x select 1;
+	_containerIndex = _forEachIndex;
 
 	{
 		_item = _x;
@@ -374,24 +392,23 @@ private _addContainerFuncs = [
 					};
 
 					if(_amountAvailable < _amount) then {
-						_amount = _amountAvailable;
 						_arrayMissing = [_arrayMissing,[_item,(_amount - _amountAvailable)]] call jn_fnc_arsenal_addToArray;
+						_amount = _amountAvailable max 0;
 					};
+					if (_amount == 0) exitWith {};				// Don't add empty mags
 					[_arrayTaken,_index,_item,_amount] call _addToArray;
 					[_availableItems,_index,_item,_amount] call _removeFromArray;
-					if (_amount>0) then {//prevent empty mags
-						_container addMagazineAmmoCargo  [_item,1, _amount];
-					};
+					_container addMagazineAmmoCargo  [_item,1, _amount];
 				};
 			} else {
 				_amount = 1;
 				call {
 					if ([_itemCounts select _index, _item] call jn_fnc_arsenal_itemCount == -1) exitWith {
-						_container addItemCargo [_item, 1];
+						[_containerIndex, _item] call _addItemToContainer;
 					};
 
-					if (_amountAvailable > _amount) then {
-						_container addItemCargo [_item,_amount];
+					if (_amountAvailable >= _amount) then {
+						[_containerIndex, _item] call _addItemToContainer;
 						[_arrayTaken,_index,_item,_amount] call _addToArray;
 						[_availableItems,_index,_item,_amount] call _removeFromArray;
 					} else {
